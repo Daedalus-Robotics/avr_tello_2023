@@ -1,5 +1,6 @@
 from djitellopy import Tello
 import cv2
+import keyboard
 
 from inspect import signature
 
@@ -11,12 +12,12 @@ school_distance = 359  # distance to the school building in cm from helipad
 back_bridge_distance = 620  # distance from helipad to back of bridge line in cm
 back_to_middle_bridge_distance = 190  # distance from the back of the bridge to the middle where color square is (needs to be calibrated)
 manual_commands = {                 # I could've used match statement, but IDK, I just felt like using this instead.
-    ord('w'): tello.move_forward,
-    ord('s'): tello.move_back,
-    ord('d'): tello.move_right,
-    ord('a'): tello.move_left,
-    ord('t'): tello.takeoff,
-    ord('l'): tello.land,
+    'w': tello.move_forward,
+    's': tello.move_back,
+    'd': tello.move_right,
+    'a': tello.move_left,
+    't': tello.takeoff,
+    'l': tello.land,
 }
 manual_commands_str = "\n".join([f"{letter}: {func.__name__}" for letter, func in manual_commands.items()]) # commands in human-readable format
 battery_left = tello.get_battery() # how much batter left
@@ -36,20 +37,16 @@ def enter_manual_mode():
     distance = 50
     
     while True:
-        key = cv2.waitKey(1)
         for letter, func in manual_commands.items():
-            if key == letter:
+            if keyboard.is_pressed(letter):
                 # checking for the number of arguments the function takes
                 if len(signature(func).parameters) == 1:
                     func(distance)
                 else:
                     func()
-            elif key == ord('m'):
+            elif keyboard.is_pressed('q'):
                 # getting outta manual mode
                 return
-            else:
-                Tello.LOGGER.warning(f"Invalid command '{letter}'")
-                Tello.LOGGER.info(f"Command list: \n{manual_commands_str}")
 
 def get_color():
     """ TODO """
@@ -76,18 +73,18 @@ def enter_recon_path():
 
 def main():
     while True:
-       img = tello.get_frame_read().frame
-       cv2.imshow('frame', img)
-       key = cv2.waitKey(1)
+        img = tello.get_frame_read().frame
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        cv2.imshow('frame', img)
+       
+        if keyboard.is_pressed('r'):
+            enter_recon_path()
+        elif keyboard.is_pressed('c'):
+            get_color()
+        elif keyboard.is_pressed('m'):
+            enter_manual_mode()
 
-       if key == ord('r'):
-           enter_recon_path()
-       elif key == ord('c'):
-           get_color()
-       elif key == ord('m'):
-           enter_manual_mode()
-
-if __file__ == 'main':
+if __name__ == '__main__':
     Tello.LOGGER.info(f"Battery: {battery_left}%")
 
     try:
