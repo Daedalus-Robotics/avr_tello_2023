@@ -30,42 +30,6 @@ def show_frames(tello: Tello) -> None:
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         cv2.imshow("CAM", frame)
 
-def enter_manual_mode(tello: Tello) -> None:
-    """
-        Enters Manual Mode
-
-        Commands are:
-         - w: moves the drone forward
-         - s: moves the drone backward
-         - d: moves the drone right
-         - a: moves the drone left
-         - t: takeoff
-         - l: lands
-    """
-    distance = 80
-    manual_commands = {  # I could've used a match statement, but IDK, I just felt like using this instead.
-        'w': tello.move_forward,
-        's': tello.move_back,
-        'd': tello.move_right,
-        'a': tello.move_left,
-        't': tello.takeoff,
-        'l': tello.land,
-    }
-
-    while True:
-        for letter, func in manual_commands.items():
-            if keyboard.is_pressed(letter):
-                # checking for the number of arguments the function takes
-                if len(signature(func).parameters) > 0:
-                    # noinspection PyArgumentList
-                    func(distance)
-                else:
-                    func()
-            elif keyboard.is_pressed('q'):
-                # getting outta manual mode
-                return
-
-
 def get_color(tello: Tello) -> None:
     tello.takeoff()
     tello.move_up(100)  # needs to check this distance go over the building

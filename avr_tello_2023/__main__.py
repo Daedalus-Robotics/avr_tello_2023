@@ -78,6 +78,9 @@ class TelloGUI(App):
 if __name__ == '__main__':
     tello = Tello()
     app = TelloGUI(tello)
+
+    # disable Tello logger
+    Tello.LOGGER.disabled = True
     
     # start_threads(tello, app)
     
