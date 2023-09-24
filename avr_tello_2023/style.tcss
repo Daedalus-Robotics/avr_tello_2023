@@ -61,3 +61,46 @@ QuitScreen {
     width: 1fr;
     content-align: center middle;
 }
+
+#manualModeScreenVertical {
+    margin: 5;
+    padding: 0 4;
+    border: thick $background 80%;
+}
+
+#leftButton {
+    dock: left;
+    width: 30%;
+    align-vertical: middle;
+}
+
+#rightButton {
+    dock: right;
+    width: 30%;
+    align-vertical: middle;
+}
+
+#forwardButton {
+    dock: top;
+    width: 30%;
+    align-horizontal: center;
+    align-vertical: top;
+}
+
+#backwordQuitVertical {
+    margin: 1;
+}
+
+#backwardButton {
+    dock: top;
+    width: 30%;
+    align-horizontal: center;
+    align-vertical: bottom
+}
+
+#quitLabel {
+    dock: top;
+    align-horizontal: center;
+    align-vertical: middle;
+    color: red;
+}

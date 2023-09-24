@@ -15,8 +15,6 @@ class ModeChoice(Static):
     
     BUTTON_NAME = ''
     DESCRIPTION = ''
-    CALLBACK = None
-    ARGS = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -31,17 +29,14 @@ class ModeChoice(Static):
         match event.button.id:
             case 'start':
                 clear_registered_modes()
-                
+                self.what_to_do_on_button_pressed()
                 self.add_class('started')
-
-                if self.CALLBACK is not None:
-                    if self.ARGS is not None:
-                        self.CALLBACK(*self.ARGS)
-                    else:
-                        self.CALLBACK()
 
             case 'stop':
                 self.remove_class('started')
+
+    def what_to_do_on_button_pressed(self) -> None:
+        raise NotImplementedError('what_to_do_on_button_pressed method must be implemented')
 
     def stop_action(self) -> None:
         raise NotImplementedError('stop_action method must be implemented')

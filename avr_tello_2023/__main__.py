@@ -1,6 +1,6 @@
 from djitellopy import Tello
 from textual.app import App, ComposeResult
-from textual.containers import ScrollableContainer
+from textual.containers import VerticalScroll
 from textual.widgets import Header, Footer, Label
 from textual.binding import Binding
 from textual import events
@@ -8,22 +8,31 @@ from textual import events
 from helper import show_frames, start_threads
 from base_widgets import ModeChoice
 from state import TelloState
-from screens.quit import QuitScreen
+from screens import QuitScreen, ManualModeScreen
 
 class ReconPath(ModeChoice): 
     BUTTON_NAME = 'Recon Path'
     # TODO: add DESCRIPTION
     DESCRIPTION = 'recon pathhhhhh'
+    
+    # TODO: implement what_to_do_on_button_pressed method
+
+    # TODO: implement stop_action method
+    def stop_action(self) -> None:
+        pass
+
 
 class GetColor(ModeChoice):
     BUTTON_NAME = 'Get Color'
     # TODO: add DESCRIPTION
-    DESCRIPTION = 'get colorrr'
+    DESCRIPTION = 'blah blah blah blah blah blah blah'
+    
+    # TODO: implement what_to_do_on_button_pressed method
+    
+    # TODO: implement stop_action method
+    def stop_action(self) -> None:
+        pass
 
-class ManualMode(ModeChoice):
-    BUTTON_NAME = 'Manual Mode'
-    # TODO: add DESCRIPTION
-    DESCRIPTION = 'manual modeeeee'
 
 class TelloGUI(App):
     """ Textual app to manage tello drones """
@@ -31,6 +40,7 @@ class TelloGUI(App):
     CSS_PATH = 'style.tcss'
     BINDINGS = [
             Binding(key='q', action='request_quit', description='Quit the app'),
+            Binding(key='m', action='request_manual', description='Enter Manual Mode'),
             Binding(key='d', action='toggle_dark', description='Toggle dark mode'),
     ]
     
@@ -43,27 +53,35 @@ class TelloGUI(App):
     def compose(self) -> ComposeResult:
         yield Header()
         yield Footer()
-        yield ScrollableContainer(
-                # TelloState(self.TELLO),
-                ManualMode(),
-                ReconPath(),
-                GetColor(),
-        )
+        with VerticalScroll():
+            # yield TelloState(self.TELLO)
+            yield ReconPath()
+            yield GetColor()
 
-    def on_mount(self) -> None:
-        self.sub_title = 'by Nobu and others'
+    async def on_mount(self) -> None:
+        self.sub_title = 'by Nobu and his minions :)'
 
     def action_toggle_dark(self) -> None:
         """ An action to toggle dark mode """
         self.dark = not self.dark
+    
+    def _check_quit(self, quit: bool) -> None:
+        if quit:
+            self.exit()
 
-    def action_request_quit(self) -> None:
-        self.push_screen(QuitScreen())
+    async def action_request_quit(self) -> None:
+        self.push_screen(QuitScreen(), self._check_quit)
+
+    async def action_request_manual(self) -> None:
+        self.push_screen(ManualModeScreen(self.TELLO))
 
 if __name__ == '__main__':
     tello = Tello()
     app = TelloGUI(tello)
     
     # start_threads(tello, app)
-
-    app.run()
+    
+    try:
+        app.run()
+    finally:
+        tello.end()

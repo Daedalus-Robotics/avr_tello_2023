@@ -1,9 +1,12 @@
 from textual.app import ComposeResult
-from textual.screen import Screen
+from textual.screen import ModalScreen
 from textual.containers import Grid
 from textual.widgets import Label, Button
 
-class QuitScreen(Screen):
+class QuitScreen(ModalScreen[bool]):
+    CSS = """
+    """
+
     def compose(self) -> ComposeResult:
         yield Grid(
             Label('Are you sure you want to quit?', id='question'),
@@ -14,6 +17,6 @@ class QuitScreen(Screen):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == 'quit':
-            self.app.exit()
+            self.dismiss(True)
         else:
-            self.app.pop_screen()
+            self.dismiss(False)
