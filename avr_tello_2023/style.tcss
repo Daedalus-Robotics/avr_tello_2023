@@ -21,8 +21,8 @@ Button {
 }
 
 #description {
-    content-align: center middle;
-    height: 3;
+    dock: right;
+    height: 5;
 }
 
 .started #start {

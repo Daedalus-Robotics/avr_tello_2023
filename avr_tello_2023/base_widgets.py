@@ -1,13 +1,14 @@
 from textual.app import ComposeResult, App
 from textual.widgets import Static, Button, Label
 
-from typing import List
+from typing import List, Any
 
-registered_modes: List[Static] = []
+registered_modes: List[Any] = []
 
 def clear_registered_modes() -> None:
     for m in registered_modes:
         m.remove_class('started')
+        m.stop_action()
 
 class ModeChoice(Static):
     """ All modes inherit this class """
@@ -30,6 +31,7 @@ class ModeChoice(Static):
         match event.button.id:
             case 'start':
                 clear_registered_modes()
+                
                 self.add_class('started')
 
                 if self.CALLBACK is not None:
@@ -40,3 +42,6 @@ class ModeChoice(Static):
 
             case 'stop':
                 self.remove_class('started')
+
+    def stop_action(self) -> None:
+        raise NotImplementedError('stop_action method must be implemented')
