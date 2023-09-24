@@ -1,102 +1,45 @@
 from djitellopy import Tello
-import cv2
-import keyboard
+from textual.app import App, ComposeResult
+from textual.containers import ScrollableContainer
+from textual.widgets import Header, Footer, Static, Button
+from textual import events
 
-from inspect import signature
+from helper import show_frames, start_threads
+from base_widgets import ModeChoice
 
-tello = Tello()
+class ReconPath(ModeChoice): 
+    BUTTON_NAME = 'Recon Path'
+    # TODO: add DESCRIPTION
 
-school_distance = 359  # distance to the school building in cm from helipad
-back_bridge_distance = 620  # distance from helipad to back of bridge line in cm
-# ToDo: Calibrate distance
-back_to_middle_bridge_distance = 190  # distance from the back of the bridge to the middle where color square is
-manual_commands = {  # I could've used a match statement, but IDK, I just felt like using this instead.
-    'w': tello.move_forward,
-    's': tello.move_back,
-    'd': tello.move_right,
-    'a': tello.move_left,
-    't': tello.takeoff,
-    'l': tello.land,
-}
-manual_commands_str = "\n".join(
-        [f"{letter}: {func.__name__}" for letter, func in manual_commands.items()])  # commands in human-readable format
-battery_left = tello.get_battery()  # how much battery left
+class GetColor(ModeChoice):
+    BUTTON_NAME = 'Get Color'
+    # TODO: add DESCRIPTION
 
+class ManualMode(ModeChoice):
+    BUTTON_NAME = 'Manual Mode'
+    # TODO: add DESCRIPTION
+    # TODO: override on_button_pressed method
 
-def enter_manual_mode() -> None:
-    """
-        Enters Manual Mode
+class TelloGUI(App):
+    """ Textual app to manage tello drones """
 
-        Commands are:
-         - w: moves the drone forward
-         - s: moves the drone backward
-         - d: moves the drone right
-         - a: moves the drone left
-         - t: takeoff
-         - l: lands
-    """
-    distance = 50
+    CSS_PATH = './style.tcss'
+    BINDINGS = [('d', 'toggle_dark', 'Toggle dark mode')]
 
-    while True:
-        for letter, func in manual_commands.items():
-            if keyboard.is_pressed(letter):
-                # checking for the number of arguments the function takes
-                if len(signature(func).parameters) > 0:
-                    # noinspection PyArgumentList
-                    func(distance)
-                else:
-                    func()
-            elif keyboard.is_pressed('q'):
-                # getting outta manual mode
-                return
+    def compose(self) -> ComposeResult:
+        yield Header()
+        yield Footer()
+        yield ScrollableContainer(ManualMode(), ReconPath(), GetColor())
 
-
-def get_color() -> None:
-    # ToDo
-    # tello code to get color from building
-    tello.takeoff()
-    tello.move_up(100)  # needs to check this distance go over the building
-    tello.rotate_clockwise(180)
-    tello.move_forward(back_bridge_distance)
-    tello.move_right(back_to_middle_bridge_distance)
-    tello.rotate_clockwise(180)
-    # implement a wait key to show color to people
-    tello.move_forward(back_bridge_distance)
-    tello.move_right(back_to_middle_bridge_distance)
-    tello.land()
-
-
-def enter_recon_path() -> None:
-    # ToDo
-    # first recon path
-    tello.takeoff()
-    tello.move_forward(school_distance)
-    # HERE IS WHERE CODE GO FOR PARACHUTE DROP
-    tello.move_back(school_distance)
-    tello.land()
-
-
-def main() -> None:
-    while True:
-        img = tello.get_frame_read().frame
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        cv2.imshow('frame', img)
-
-        if keyboard.is_pressed('r'):
-            enter_recon_path()
-        elif keyboard.is_pressed('c'):
-            get_color()
-        elif keyboard.is_pressed('m'):
-            enter_manual_mode()
+    def action_toggle_dark(self) -> None:
+        """ An action to toggle dark mode """
+        self.dark = not self.dark
 
 
 if __name__ == '__main__':
-    tello.connect()
-    tello.streamon()
+    # tello = Tello()
+    app = TelloGUI()
+    
+    # start_threads(tello, app)
 
-    Tello.LOGGER.info(f"Battery: {battery_left}%")
-
-    try:
-        main()
-    finally:
-        tello.land()
+    app.run()
