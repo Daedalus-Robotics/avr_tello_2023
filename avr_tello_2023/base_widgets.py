@@ -14,6 +14,8 @@ class ModeChoice(Static):
     
     BUTTON_NAME = ''
     DESCRIPTION = ''
+    CALLBACK = None
+    ARGS = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -29,5 +31,12 @@ class ModeChoice(Static):
             case 'start':
                 clear_registered_modes()
                 self.add_class('started')
+
+                if self.CALLBACK is not None:
+                    if self.ARGS is not None:
+                        self.CALLBACK(*self.ARGS)
+                    else:
+                        self.CALLBACK()
+
             case 'stop':
                 self.remove_class('started')
