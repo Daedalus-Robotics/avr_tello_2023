@@ -4,10 +4,6 @@ from textual.containers import Grid
 from textual.widgets import Label, Button
 
 class QuitScreen(Screen):
-    CSS = """Button {
-       width: 100%;
-    }"""
-
     def compose(self) -> ComposeResult:
         yield Grid(
             Label('Are you sure you want to quit?', id='question'),

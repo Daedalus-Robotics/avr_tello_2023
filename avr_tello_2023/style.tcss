@@ -7,22 +7,24 @@ ModeChoice {
     padding: 1;
 }
 
-Button {
-    width: 22;
-}
-
 TelloState {
     dock: top;
     layout: vertical;
 }
 
+Button {
+    width: 100%;
+}
+
 #start {
     dock: left;
+    width: 22;
 }
 
 #stop {
     dock: left;
     display: none;
+    width: 22;
 }
 
 #description {

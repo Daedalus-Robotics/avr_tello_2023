@@ -44,7 +44,7 @@ class TelloGUI(App):
         yield Header()
         yield Footer()
         yield ScrollableContainer(
-                TelloState(self.TELLO),
+                # TelloState(self.TELLO),
                 ManualMode(),
                 ReconPath(),
                 GetColor(),
