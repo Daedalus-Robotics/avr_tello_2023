@@ -1,4 +1,4 @@
-from djitellopy import Tello
+from djitellopy import Tello, TelloException
 import cv2
 import keyboard
 from textual.app import App
@@ -7,6 +7,14 @@ from inspect import signature
 from threading import Thread
 
 from constants import BACK_BRIDGE_DISTANCE, BACK_TO_MIDDLE_BRIDGE_DISTANCE, SCHOOL_DISTANCE
+
+def get_battery(tello: Tello) -> str:
+    try:
+        battery = tello.get_battery()
+    except TelloException:
+        raise Exception('Could not get tello battery. Maybe not connected to tello?')
+    
+    return f'Battery: {battery}%'
 
 def start_threads(tello: Tello, app: App) -> None:
     Thread(

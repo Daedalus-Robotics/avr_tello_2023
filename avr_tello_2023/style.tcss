@@ -11,6 +11,11 @@ Button {
     width: 22;
 }
 
+TelloState {
+    dock: top;
+    layout: vertical;
+}
+
 #start {
     dock: left;
 }
