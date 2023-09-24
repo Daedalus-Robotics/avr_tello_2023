@@ -1,7 +1,7 @@
 from djitellopy import Tello
 from textual.app import App, ComposeResult
 from textual.containers import ScrollableContainer
-from textual.widgets import Header, Footer, Static, Button
+from textual.widgets import Header, Footer
 from textual import events
 
 from helper import show_frames, start_threads
