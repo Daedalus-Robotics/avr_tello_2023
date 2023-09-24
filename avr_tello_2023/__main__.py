@@ -8,6 +8,7 @@ from textual import events
 from helper import show_frames, start_threads
 from base_widgets import ModeChoice
 from state import TelloState
+from screens.quit import QuitScreen
 
 class ReconPath(ModeChoice): 
     BUTTON_NAME = 'Recon Path'
@@ -29,7 +30,7 @@ class TelloGUI(App):
 
     CSS_PATH = 'style.tcss'
     BINDINGS = [
-            Binding(key='q', action='quit', description='Quit the app'),
+            Binding(key='q', action='request_quit', description='Quit the app'),
             Binding(key='d', action='toggle_dark', description='Toggle dark mode'),
     ]
     
@@ -55,6 +56,9 @@ class TelloGUI(App):
     def action_toggle_dark(self) -> None:
         """ An action to toggle dark mode """
         self.dark = not self.dark
+
+    def action_request_quit(self) -> None:
+        self.push_screen(QuitScreen())
 
 if __name__ == '__main__':
     tello = Tello()
