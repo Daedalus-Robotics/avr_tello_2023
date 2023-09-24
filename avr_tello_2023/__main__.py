@@ -23,7 +23,7 @@ class ManualMode(ModeChoice):
 class TelloGUI(App):
     """ Textual app to manage tello drones """
 
-    CSS_PATH = './style.tcss'
+    CSS_PATH = 'style.tcss'
     BINDINGS = [('d', 'toggle_dark', 'Toggle dark mode')]
 
     def compose(self) -> ComposeResult:
