@@ -23,6 +23,7 @@ class ManualModeScreen(ModalScreen):
             Binding(key='f', action='move_up', description='Moves the Tello drone upward'),
             Binding(key='c', action='move_down', description='Moves the Tello drone downward'),
             Binding(key='l', action='land', description='Lands the Tello drone'),
+            Binding(key='t', action='takeoff', description='Take off!'),
     ]
 
     def __init__(self, tello: Tello, *args, **kwargs):
@@ -78,3 +79,6 @@ class ManualModeScreen(ModalScreen):
     
     def action_move_down(self) -> None:
         self.TELLO.move_down(self.DISTANCE)
+
+    def action_takeoff(self) -> None:
+        self.TELLO.takeoff()

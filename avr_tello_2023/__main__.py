@@ -54,12 +54,12 @@ class TelloGUI(App):
         yield Header()
         yield Footer()
         with VerticalScroll():
-            # yield TelloState(self.TELLO)
+            yield TelloState(self.TELLO)
             yield ReconPath()
             yield GetColor()
 
     async def on_mount(self) -> None:
-        self.sub_title = 'by Nobu and his minions :)'
+        self.sub_title = 'by Nobu :)'
 
     def action_toggle_dark(self) -> None:
         """ An action to toggle dark mode """

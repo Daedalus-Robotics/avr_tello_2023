@@ -11,7 +11,7 @@ from constants import BACK_BRIDGE_DISTANCE, BACK_TO_MIDDLE_BRIDGE_DISTANCE, SCHO
 def get_battery(tello: Tello) -> str:
     try:
         battery = tello.get_battery()
-    except TelloException:
+    except TelloException as e:
         raise Exception('Could not get tello battery. Maybe not connected to tello?')
     
     return f'Battery: {battery}%'
