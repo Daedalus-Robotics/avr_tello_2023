@@ -12,6 +12,7 @@ def get_battery(tello: Tello) -> str:
     try:
         battery = tello.get_battery()
     except TelloException as e:
+        print(e)
         raise Exception('Could not get tello battery. Maybe not connected to tello?')
     
     return f'Battery: {battery}%'

@@ -7,8 +7,7 @@ from textual import events
 
 from helper import show_frames, start_threads
 from base_widgets import ModeChoice
-from state import TelloState
-from screens import QuitScreen, ManualModeScreen
+from screens import QuitScreen, ManualModeScreen, StateScreen
 
 class ReconPath(ModeChoice): 
     BUTTON_NAME = 'Recon Path'
@@ -22,18 +21,6 @@ class ReconPath(ModeChoice):
         pass
 
 
-class GetColor(ModeChoice):
-    BUTTON_NAME = 'Get Color'
-    # TODO: add DESCRIPTION
-    DESCRIPTION = 'blah blah blah blah blah blah blah'
-    
-    # TODO: implement what_to_do_on_button_pressed method
-    
-    # TODO: implement stop_action method
-    def stop_action(self) -> None:
-        pass
-
-
 class TelloGUI(App):
     """ Textual app to manage tello drones """
 
@@ -41,6 +28,7 @@ class TelloGUI(App):
     BINDINGS = [
             Binding(key='q', action='request_quit', description='Quit the app'),
             Binding(key='m', action='request_manual', description='Enter Manual Mode'),
+            Binding(key='s', action='request_state', description='Show the state of Tello'),
             Binding(key='d', action='toggle_dark', description='Toggle dark mode'),
     ]
     
@@ -54,9 +42,7 @@ class TelloGUI(App):
         yield Header()
         yield Footer()
         with VerticalScroll():
-            yield TelloState(self.TELLO)
             yield ReconPath()
-            yield GetColor()
 
     async def on_mount(self) -> None:
         self.sub_title = 'by Nobu :)'
@@ -75,8 +61,13 @@ class TelloGUI(App):
     async def action_request_manual(self) -> None:
         self.push_screen(ManualModeScreen(self.TELLO))
 
+    async def action_request_state(self) -> None:
+        self.push_screen(StateScreen(self.TELLO))
+
 if __name__ == '__main__':
     tello = Tello()
+    tello.connect()
+    
     app = TelloGUI(tello)
 
     # disable Tello logger

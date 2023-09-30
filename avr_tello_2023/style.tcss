@@ -7,11 +7,6 @@ ModeChoice {
     padding: 1;
 }
 
-TelloState {
-    dock: top;
-    layout: vertical;
-}
-
 Button {
     width: 100%;
 }
@@ -103,4 +98,9 @@ QuitScreen {
     align-horizontal: center;
     align-vertical: middle;
     color: red;
+}
+
+#stateScreen {
+    margin: 5;
+    content-align: center middle;
 }
