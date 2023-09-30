@@ -5,16 +5,24 @@ from textual.widgets import Header, Footer, Label
 from textual.binding import Binding
 from textual import events
 
-from helper import show_frames, start_threads
+from helper import show_frames, start_threads, enter_recon_path
 from base_widgets import ModeChoice
 from screens import QuitScreen, ManualModeScreen, StateScreen
 
 class ReconPath(ModeChoice): 
+    TELLO: Tello = None
+
     BUTTON_NAME = 'Recon Path'
     # TODO: add DESCRIPTION
     DESCRIPTION = 'recon pathhhhhh'
     
+    def __init__(self, tello: Tello, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.TELLO = tello
+    
     # TODO: implement what_to_do_on_button_pressed method
+    def what_to_do_on_button_pressed(self) -> None:
+        enter_recon_path(self.TELLO)
 
     # TODO: implement stop_action method
     def stop_action(self) -> None:
@@ -42,7 +50,7 @@ class TelloGUI(App):
         yield Header()
         yield Footer()
         with VerticalScroll():
-            yield ReconPath()
+            yield ReconPath(self.TELLO)
 
     async def on_mount(self) -> None:
         self.sub_title = 'by Nobu :)'
@@ -67,15 +75,18 @@ class TelloGUI(App):
 if __name__ == '__main__':
     tello = Tello()
     tello.connect()
+    tello.streamon()
     
     app = TelloGUI(tello)
 
     # disable Tello logger
     Tello.LOGGER.disabled = True
     
-    # start_threads(tello, app)
+    threads = start_threads(tello, app)
     
     try:
         app.run()
+        for t in threads:
+            t.join()
     finally:
         tello.end()

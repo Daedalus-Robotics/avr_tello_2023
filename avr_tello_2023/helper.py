@@ -5,6 +5,8 @@ from textual.app import App
 
 from inspect import signature
 from threading import Thread
+from typing import List
+from time import sleep
 
 from constants import BACK_BRIDGE_DISTANCE, BACK_TO_MIDDLE_BRIDGE_DISTANCE, SCHOOL_DISTANCE
 
@@ -17,19 +19,26 @@ def get_battery(tello: Tello) -> str:
     
     return f'Battery: {battery}%'
 
-def start_threads(tello: Tello, app: App) -> None:
-    Thread(
+def start_threads(tello: Tello, app: App) -> List[Thread]:
+    threads = []
+    threads.append(Thread(
             target=show_frames,
             args=(tello,),
-            daemon=True
-    ).start()
+    ))
+    for t in threads:
+        t.start()
+    
+    return threads
 
 def show_frames(tello: Tello) -> None:
+    frame_read = tello.get_frame_read()
+    
     while True:
-        frame = tello.get_frame_read().frame
-        frame = cv2.resize(frame, (360, 240))
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        cv2.imshow("CAM", frame)
+        frame = frame_read.frame
+        img = cv2.resize(frame, (360, 240))
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        cv2.imshow('camera feed', img)
+        sleep(1 / 10)
 
 def get_color(tello: Tello) -> None:
     tello.takeoff()
