@@ -13,14 +13,12 @@ class ReconPath(ModeChoice):
     TELLO: Tello = None
 
     BUTTON_NAME = 'Recon Path'
-    # TODO: add DESCRIPTION
-    DESCRIPTION = 'recon pathhhhhh'
+    DESCRIPTION = 'Phase 1 Recon path'
     
     def __init__(self, tello: Tello, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.TELLO = tello
     
-    # TODO: implement what_to_do_on_button_pressed method
     def what_to_do_on_button_pressed(self) -> None:
         enter_recon_path(self.TELLO)
 
