@@ -7,7 +7,7 @@ from textual import events
 
 from helper import show_frames, start_threads, enter_recon_path
 from base_widgets import ModeChoice
-from screens import QuitScreen, ManualModeScreen, StateScreen
+from screens import QuitScreen, ManualModeScreen, StateScreen, HelpScreen
 
 class ReconPath(ModeChoice): 
     TELLO: Tello = None
@@ -65,10 +65,13 @@ class TelloGUI(App):
         self.push_screen(QuitScreen(), self._check_quit)
 
     async def action_request_manual(self) -> None:
-        self.push_screen(ManualModeScreen(self.TELLO))
+        self.push_screen(ManualModeScreen(self.TELLO, self))
 
     async def action_request_state(self) -> None:
         self.push_screen(StateScreen(self.TELLO))
+
+    def push_help_screen(self) -> None:
+        self.push_screen(HelpScreen())
 
 if __name__ == '__main__':
     tello = Tello()

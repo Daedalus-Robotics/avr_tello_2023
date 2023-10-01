@@ -1,6 +1,6 @@
 from textual.app import ComposeResult
 from textual.screen import ModalScreen
-from textual.containers import Horizontal, Vertical, Container
+from textual.containers import Vertical
 from textual.binding import Binding
 from textual.widgets import Label, Button
 from djitellopy import Tello
@@ -31,7 +31,7 @@ class StateScreen(ModalScreen):
 
     def compose(self) -> ComposeResult:
         yield Vertical(
-            Label('Enter "q" to quit'),
+            Label('Enter "q" to quit', id='quitLabel'),
             BatteryLabel(self.TELLO),
             id='stateScreen'
         )

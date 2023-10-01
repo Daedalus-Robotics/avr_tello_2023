@@ -1,34 +1,26 @@
-from textual.app import ComposeResult
+from textual.app import ComposeResult, App
 from textual.screen import ModalScreen
-from textual.containers import Horizontal, Vertical, Container
+from textual.containers import Horizontal, Vertical
 from textual.binding import Binding
 from textual.widgets import Label, Button
 from djitellopy import Tello
 
-from typing import Callable
+from constants import MANUAL_MODE_COMMANDS
 
 class ManualModeScreen(ModalScreen):
     TELLO: Tello = None
-    DISTANCE = 50
+    
+    DISTANCE = 80
     ROTATION = 30
 
-    BINDINGS = [
-            Binding(key='q', action='request_quit_manual', description='Quit Manual Mode'),
-            Binding(key='w', action='move_forward', description="Moves the Tello drone forward"),
-            Binding(key='a', action='move_left', description="Moves the Tello drone left"),
-            Binding(key='d', action='move_right', description="Moves the Tello drone right"),
-            Binding(key='s', action='move_backward', description="Moves the Tello drone backward"),
-            Binding(key='e', action='rotate_ccw', description='Rotates the Tello drone counter clockwise'),
-            Binding(key='r', action='rotate_cw', description='Rotates the Tello drone clockwise'),
-            Binding(key='f', action='move_up', description='Moves the Tello drone upward'),
-            Binding(key='c', action='move_down', description='Moves the Tello drone downward'),
-            Binding(key='l', action='land', description='Lands the Tello drone'),
-            Binding(key='t', action='takeoff', description='Take off!'),
-    ]
+    BINDINGS = \
+        [Binding(key=m[0], action=m[1], description=m[2]) for m in MANUAL_MODE_COMMANDS] + \
+        [Binding(key='h', action='request_help', description='Show Help screen')]
 
-    def __init__(self, tello: Tello, *args, **kwargs):
+    def __init__(self, tello: Tello, app: App, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.TELLO = tello
+        self.APP = app
 
     def compose(self) -> ComposeResult:
         widget = Vertical(
@@ -82,3 +74,6 @@ class ManualModeScreen(ModalScreen):
 
     def action_takeoff(self) -> None:
         self.TELLO.takeoff()
+
+    def action_request_help(self) -> None:
+        self.APP.push_help_screen()
