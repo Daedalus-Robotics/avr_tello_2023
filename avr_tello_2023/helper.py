@@ -4,6 +4,7 @@ import keyboard
 from textual.app import App
 
 from inspect import signature
+from platform import system
 from threading import Thread
 from typing import List
 from time import sleep
@@ -21,10 +22,13 @@ def get_battery(tello: Tello) -> str:
 
 def start_threads(tello: Tello, app: App) -> List[Thread]:
     threads = []
-    threads.append(Thread(
+    
+    if system() != 'Darwin':
+        threads.append(Thread(
             target=show_frames,
             args=(tello,),
-    ))
+        ))
+    
     for t in threads:
         t.start()
     

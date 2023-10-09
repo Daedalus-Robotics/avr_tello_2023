@@ -10,6 +10,7 @@ BACK_TO_MIDDLE_BRIDGE_DISTANCE = 190  # distance from the back of the bridge to 
 # key, action, description
 MANUAL_MODE_COMMANDS = [
     ('q', 'request_quit_manual', 'Quit Manual Mode'),
+    ('Q', 'request_force_quit', 'Force quit'),
     ('w', 'move_forward', "Moves the Tello drone forward"),
     ('a', 'move_left', "Moves the Tello drone left"),
     ('d', 'move_right', "Moves the Tello drone right"),

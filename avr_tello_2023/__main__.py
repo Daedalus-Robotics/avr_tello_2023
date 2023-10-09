@@ -4,6 +4,7 @@ from textual.containers import VerticalScroll
 from textual.widgets import Header, Footer, Label
 from textual.binding import Binding
 from textual import events
+import serial
 
 from helper import show_frames, start_threads, enter_recon_path
 from base_widgets import ModeChoice
@@ -12,7 +13,7 @@ from screens import QuitScreen, ManualModeScreen, StateScreen, HelpScreen
 class ReconPath(ModeChoice): 
     TELLO: Tello = None
 
-    BUTTON_NAME = 'Recon Path'
+    BUTTON_NAME = 'Enter Recon Path'
     DESCRIPTION = 'Phase 1 Recon path'
     
     def __init__(self, tello: Tello, *args, **kwargs):
@@ -21,6 +22,21 @@ class ReconPath(ModeChoice):
     
     def what_to_do_on_button_pressed(self) -> None:
         enter_recon_path(self.TELLO)
+
+    # TODO: implement stop_action method
+    def stop_action(self) -> None:
+        pass
+
+
+class SmokeJumper(ModeChoice):
+    DESCRIPTION = 'Release smoke jumpers'
+    BUTTON_NAME = 'Release'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def what_to_do_on_button_pressed(self) -> None:
+        pass
 
     # TODO: implement stop_action method
     def stop_action(self) -> None:
@@ -49,6 +65,7 @@ class TelloGUI(App):
         yield Footer()
         with VerticalScroll():
             yield ReconPath(self.TELLO)
+            yield SmokeJumper()
 
     async def on_mount(self) -> None:
         self.sub_title = 'by Nobu :)'
