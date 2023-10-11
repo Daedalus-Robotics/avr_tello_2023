@@ -6,7 +6,7 @@ from textual.binding import Binding
 from textual import events
 import serial
 
-from helper import show_frames, start_threads, enter_recon_path
+from helper import show_frames, enter_recon_path
 from base_widgets import ModeChoice
 from screens import QuitScreen, ManualModeScreen, StateScreen, HelpScreen
 
@@ -69,6 +69,7 @@ class TelloGUI(App):
 
     async def on_mount(self) -> None:
         self.sub_title = 'by Nobu :)'
+        self.run_worker(show_frames(self.TELLO), thread=True)
 
     def action_toggle_dark(self) -> None:
         """ An action to toggle dark mode """
@@ -100,11 +101,7 @@ if __name__ == '__main__':
     # disable Tello logger
     Tello.LOGGER.disabled = True
     
-    threads = start_threads(tello, app)
-    
     try:
         app.run()
-        for t in threads:
-            t.join()
     finally:
         tello.end()

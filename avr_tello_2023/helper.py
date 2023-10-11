@@ -20,29 +20,13 @@ def get_battery(tello: Tello) -> str:
     
     return f'Battery: {battery}%'
 
-def start_threads(tello: Tello, app: App) -> List[Thread]:
-    threads = []
-    
-    if system() != 'Darwin':
-        threads.append(Thread(
-            target=show_frames,
-            args=(tello,),
-        ))
-    
-    for t in threads:
-        t.start()
-    
-    return threads
-
 def show_frames(tello: Tello) -> None:
     frame_read = tello.get_frame_read()
-    
     while True:
         frame = frame_read.frame
         img = cv2.resize(frame, (360, 240))
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         cv2.imshow('camera feed', img)
-        sleep(1 / 10)
 
 def get_color(tello: Tello) -> None:
     tello.takeoff()

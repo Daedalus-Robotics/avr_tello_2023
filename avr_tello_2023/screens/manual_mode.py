@@ -46,7 +46,7 @@ class ManualModeScreen(ModalScreen):
 
     def validate_vals(self, vals) -> List[int]:
         self.TELLO.send_rc_control(*vals)
-        [0, 0, 0, 0]
+        return [0, 0, 0, 0]
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == 'quitButton':
