@@ -11,15 +11,16 @@ from typing import List
 
 from constants import MANUAL_MODE_COMMANDS
 
+
 class ManualModeScreen(ModalScreen):
     TELLO: Tello = None
-    
+
     DISTANCE = 50
     ROTATION = 30
 
-    BINDINGS = \
-        [Binding(key=m[0], action=m[1], description=m[2]) for m in MANUAL_MODE_COMMANDS] + \
-        [Binding(key='h', action='request_help', description='Show Help screen')]
+    BINDINGS = [
+        Binding(key=m[0], action=m[1], description=m[2]) for m in MANUAL_MODE_COMMANDS
+    ] + [Binding(key="h", action="request_help", description="Show Help screen")]
 
     vals = reactive([0, 0, 0, 0])
 
@@ -30,18 +31,34 @@ class ManualModeScreen(ModalScreen):
 
     def compose(self) -> ComposeResult:
         widget = Vertical(
-            Label('Enter "q" to quit Manual Mode', id='quitLabel'),
-            Button('Forward', variant='primary', id='forwardButton', name='directionButtons'),
-            Horizontal(
-                Button('Left', variant='primary', id='leftButton', name='directionButtons'),
-                Button('Right', variant='primary', id='rightButton', name='directionButtons'),
-                id='leftRightHorizontal'
+            Label('Enter "q" to quit Manual Mode', id="quitLabel"),
+            Button(
+                "Forward",
+                variant="primary",
+                id="forwardButton",
+                name="directionButtons",
             ),
-            Button('Backward', variant='primary', id='backwardButton', name='directionButtons'),
-            
-            id='manualModeScreenVertical'
+            Horizontal(
+                Button(
+                    "Left", variant="primary", id="leftButton", name="directionButtons"
+                ),
+                Button(
+                    "Right",
+                    variant="primary",
+                    id="rightButton",
+                    name="directionButtons",
+                ),
+                id="leftRightHorizontal",
+            ),
+            Button(
+                "Backward",
+                variant="primary",
+                id="backwardButton",
+                name="directionButtons",
+            ),
+            id="manualModeScreenVertical",
         )
-        
+
         yield widget
 
     def validate_vals(self, vals) -> List[int]:
@@ -49,7 +66,7 @@ class ManualModeScreen(ModalScreen):
         return [0, 0, 0, 0]
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == 'quitButton':
+        if event.button.id == "quitButton":
             self.dismiss()
 
     def action_request_quit_manual(self) -> None:

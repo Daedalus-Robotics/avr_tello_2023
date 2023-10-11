@@ -10,16 +10,17 @@ from helper import show_frames, enter_recon_path
 from base_widgets import ModeChoice
 from screens import QuitScreen, ManualModeScreen, StateScreen, HelpScreen
 
-class ReconPath(ModeChoice): 
+
+class ReconPath(ModeChoice):
     TELLO: Tello = None
 
-    BUTTON_NAME = 'Enter Recon Path'
-    DESCRIPTION = 'Phase 1 Recon path'
-    
+    BUTTON_NAME = "Enter Recon Path"
+    DESCRIPTION = "Phase 1 Recon path"
+
     def __init__(self, tello: Tello, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.TELLO = tello
-    
+
     def what_to_do_on_button_pressed(self) -> None:
         enter_recon_path(self.TELLO)
 
@@ -29,8 +30,8 @@ class ReconPath(ModeChoice):
 
 
 class SmokeJumper(ModeChoice):
-    DESCRIPTION = 'Release smoke jumpers'
-    BUTTON_NAME = 'Release'
+    DESCRIPTION = "Release smoke jumpers"
+    BUTTON_NAME = "Release"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -44,21 +45,24 @@ class SmokeJumper(ModeChoice):
 
 
 class TelloGUI(App):
-    """ Textual app to manage tello drones """
+    """Textual app to manage tello drones"""
 
-    CSS_PATH = 'style.tcss'
+    CSS_PATH = "style.tcss"
     BINDINGS = [
-            Binding(key='q', action='request_quit', description='Quit the app'),
-            Binding(key='m', action='request_manual', description='Enter Manual Mode'),
-            Binding(key='s', action='request_state', description='Show the state of Tello'),
-            Binding(key='d', action='toggle_dark', description='Toggle dark mode'),
+        Binding(key="q", action="request_quit", description="Quit the app"),
+        Binding(key="m", action="request_manual", description="Enter Manual Mode"),
+        Binding(key="s", action="request_state", description="Show the state of Tello"),
+        Binding(key="d", action="toggle_dark", description="Toggle dark mode"),
     ]
-    
+
     TELLO: Tello = None
 
     def __init__(self, tello: Tello, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.TELLO = tello
+
+    def show_frames(self):
+        show_frames(self.TELLO)
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -68,13 +72,13 @@ class TelloGUI(App):
             yield SmokeJumper()
 
     async def on_mount(self) -> None:
-        self.sub_title = 'by Nobu :)'
-        self.run_worker(show_frames(self.TELLO), thread=True)
+        self.sub_title = "by Nobu :)"
+        self.set_interval(0.05, self.show_frames)
 
     def action_toggle_dark(self) -> None:
-        """ An action to toggle dark mode """
+        """An action to toggle dark mode"""
         self.dark = not self.dark
-    
+
     def _check_quit(self, quit: bool) -> None:
         if quit:
             self.exit()
@@ -91,16 +95,17 @@ class TelloGUI(App):
     def push_help_screen(self) -> None:
         self.push_screen(HelpScreen())
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     tello = Tello()
     tello.connect()
     tello.streamon()
-    
+
     app = TelloGUI(tello)
 
     # disable Tello logger
     Tello.LOGGER.disabled = True
-    
+
     try:
         app.run()
     finally:
