@@ -2,6 +2,7 @@ from djitellopy import Tello, TelloException
 import cv2
 import keyboard
 from textual.app import App
+import serial
 
 from inspect import signature
 from platform import system
