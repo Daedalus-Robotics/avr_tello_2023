@@ -1,28 +1,42 @@
+from textual import events
+from textual.binding import Binding
 from textual.app import ComposeResult, App
 from textual.screen import ModalScreen
 from textual.containers import Horizontal, Vertical
-from textual.binding import Binding
 from textual.widgets import Label, Button
 from textual.reactive import reactive
 from djitellopy import Tello
 
-from time import sleep
 from typing import List
-
-from constants import MANUAL_MODE_COMMANDS
+from time import sleep
 
 
 class ManualModeScreen(ModalScreen):
     TELLO: Tello = None
 
-    DISTANCE = 50
+    DISTANCE = 80
     ROTATION = 30
 
-    BINDINGS = [
-        Binding(key=m[0], action=m[1], description=m[2]) for m in MANUAL_MODE_COMMANDS
-    ] + [Binding(key="h", action="request_help", description="Show Help screen")]
-
     vals = reactive([0, 0, 0, 0])
+
+    pressed = "pressed({}, {})"
+
+    BINDINGS = [
+        Binding(key="w", action=pressed.format(1, DISTANCE)),
+        Binding(key="s", action=pressed.format(1, -DISTANCE)),
+        Binding(key="a", action=pressed.format(0, -DISTANCE)),
+        Binding(key="d", action=pressed.format(0, DISTANCE)),
+        Binding(key="W", action=pressed.format(2, DISTANCE)),
+        Binding(key="S", action=pressed.format(2, -DISTANCE)),
+        Binding(key="A", action=pressed.format(3, -ROTATION)),
+        Binding(key="D", action=pressed.format(3, ROTATION)),
+        Binding(key="c", action="toggle_camara"),
+        Binding(key="t", action="takeoff"),
+        Binding(key="l", action="land"),
+        Binding(key="h", action="help"),
+        Binding(key="q", action="quit(False)"),
+        Binding(key="Q", action="quit(True)"),
+    ]
 
     def __init__(self, tello: Tello, app: App, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -63,44 +77,33 @@ class ManualModeScreen(ModalScreen):
 
     def validate_vals(self, vals) -> List[int]:
         self.TELLO.send_rc_control(*vals)
+        sleep(1 / 4)
+        self.TELLO.send_rc_control(0, 0, 0, 0)
         return [0, 0, 0, 0]
+
+    def action_takeoff(self) -> None:
+        self.TELLO.takeoff()
+
+    def action_land(self) -> None:
+        self.TELLO.land()
+
+    def action_toggle_camara(self) -> None:
+        pass
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "quitButton":
             self.dismiss()
 
-    def action_request_quit_manual(self) -> None:
-        self.dismiss()
+    def action_pressed(self, val_idx: int, distance: int) -> None:
+        vals = [0 for _ in range(4)]
+        vals[val_idx] = distance
+        self.vals = vals
 
-    def action_move_forward(self) -> None:
-        self.vals = [self.vals[0], self.DISTANCE, self.vals[2], self.vals[3]]
+    def action_quit(self, immediately: bool) -> None:
+        if immediately:
+            self.TELLO.emergency()
+        else:
+            self.dismiss()
 
-    def action_move_backward(self) -> None:
-        self.vals = [self.vals[0], -self.DISTANCE, self.vals[2], self.vals[3]]
-
-    def action_move_left(self) -> None:
-        self.vals = [-self.DISTANCE, self.vals[1], self.vals[2], self.vals[3]]
-
-    def action_move_right(self) -> None:
-        self.vals = [self.DISTANCE, self.vals[1], self.vals[2], self.vals[3]]
-
-    def action_land(self) -> None:
-        self.TELLO.land()
-
-    def action_rotate_cw(self) -> None:
-        self.vals = [self.vals[0], self.vals[1], self.vals[2], self.ROTATION]
-
-    def action_rotate_ccw(self) -> None:
-        self.vals = [self.vals[0], self.vals[1], self.vals[2], -self.ROTATION]
-
-    def action_move_up(self) -> None:
-        self.vals = [self.vals[0], self.vals[1], self.DISTANCE, self.vals[3]]
-
-    def action_move_down(self) -> None:
-        self.vals = [self.vals[0], self.vals[1], -self.DISTANCE, self.vals[3]]
-
-    def action_takeoff(self) -> None:
-        self.TELLO.takeoff()
-
-    def action_request_help(self) -> None:
+    def action_help(self) -> None:
         self.APP.push_help_screen()

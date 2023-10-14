@@ -1,4 +1,4 @@
-from textual.app import ComposeResult, App
+from textual.app import ComposeResult
 from textual.screen import ModalScreen
 from textual.containers import Vertical
 from textual.widgets import Label
@@ -12,7 +12,7 @@ class HelpScreen(ModalScreen):
     def compose(self) -> ComposeResult:
         yield Vertical(
             Label('Enter "q" to quit', id="quitLabel"),
-            *[Label(f"{m[0]}: {m[2]}") for m in MANUAL_MODE_COMMANDS],
+            *[Label(f"{m[0]}: {m[1]}") for m in MANUAL_MODE_COMMANDS],
         )
 
     def action_request_quit(self) -> None:
