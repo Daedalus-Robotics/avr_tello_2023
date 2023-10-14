@@ -15,6 +15,7 @@ from constants import (
     BACK_TO_MIDDLE_BRIDGE_DISTANCE,
     SCHOOL_DISTANCE,
 )
+from april_tag import at_detector, process_image, target_action
 
 
 def get_battery(tello: Tello) -> str:
@@ -30,27 +31,22 @@ def get_battery(tello: Tello) -> str:
 def show_frames(tello: Tello) -> None:
     frame_read = tello.get_frame_read()
     frame = frame_read.frame
-    img = cv2.resize(frame, (360, 240))
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = frame
+    dbg_img = img
+
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    tags = at_detector.detect(
+        img, estimate_tag_pose=False, camera_params=None, tag_size=None
+    )
+
+    target = [6]
+    dbg_img = process_image(dbg_img, tags, target)
+
+    # move the tello
+    tello.send_rc_control(*target_action(target))
+
     cv2.waitKey(1)
-    cv2.imshow("camera feed", img)
-
-
-def get_color(tello: Tello) -> None:
-    tello.takeoff()
-    tello.move_up(100)  # needs to check this distance go over the building
-    tello.rotate_clockwise(180)
-    tello.move_forward(BACK_BRIDGE_DISTANCE)
-    tello.move_right(BACK_TO_MIDDLE_BRIDGE_DISTANCE)
-    tello.rotate_clockwise(180)
-
-    # blocks until you press esc
-    # TODO: should I fix this later?
-    keyboard.wait("esc")
-
-    tello.move_forward(BACK_BRIDGE_DISTANCE)
-    tello.move_right(BACK_TO_MIDDLE_BRIDGE_DISTANCE)
-    tello.land()
+    cv2.imshow("camera feed", dbg_img)
 
 
 def enter_recon_path(tello: Tello) -> None:

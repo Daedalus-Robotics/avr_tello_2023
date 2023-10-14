@@ -56,7 +56,7 @@ class TelloGUI(App):
 
     async def on_mount(self) -> None:
         self.sub_title = "by Nobu :)"
-        self.set_interval(0.05, self.show_frames)
+        self.set_interval(0.3, self.show_frames)
 
     def action_toggle_dark(self) -> None:
         """An action to toggle dark mode"""

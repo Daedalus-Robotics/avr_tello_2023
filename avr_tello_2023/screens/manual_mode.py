@@ -21,6 +21,8 @@ class ManualModeScreen(ModalScreen):
 
     pressed = "pressed({}, {})"
 
+    CAMERA_DIRECTION = "forward"
+
     BINDINGS = [
         Binding(key="w", action=pressed.format(1, DISTANCE)),
         Binding(key="s", action=pressed.format(1, -DISTANCE)),
@@ -77,7 +79,7 @@ class ManualModeScreen(ModalScreen):
 
     def validate_vals(self, vals) -> List[int]:
         self.TELLO.send_rc_control(*vals)
-        sleep(1 / 4)
+        sleep(1 / 3)
         self.TELLO.send_rc_control(0, 0, 0, 0)
         return [0, 0, 0, 0]
 
@@ -88,7 +90,12 @@ class ManualModeScreen(ModalScreen):
         self.TELLO.land()
 
     def action_toggle_camara(self) -> None:
-        pass
+        if self.CAMERA_DIRECTION == "forward":
+            self.TELLO.send_command_with_return("downvision 1")
+            self.CAMERA_DIRECTION = "backward"
+        else:
+            self.TELLO.send_command_with_return("downvision 0")
+            self.CAMERA_DIRECTION = "forward"
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "quitButton":
