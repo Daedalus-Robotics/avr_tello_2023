@@ -8,6 +8,7 @@ from textual import events
 from helper import show_frames, enter_recon_path
 from base_widgets import ModeChoice
 from screens import QuitScreen, ManualModeScreen, StateScreen, HelpScreen
+import smoke_jumper
 
 
 class ReconPath(ModeChoice):
@@ -88,6 +89,9 @@ if __name__ == "__main__":
 
     # disable Tello logger
     Tello.LOGGER.disabled = True
+
+    port = smoke_jumper.scan_ports()[0]
+    smoke_jumper.configure(port)
 
     try:
         app.run()
