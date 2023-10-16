@@ -1,5 +1,7 @@
 CSS_PATH = "./style.tcss"
 
+# TODO: add APRIL_TAG_DISTANCE
+
 SCHOOL_DISTANCE = 359  # distance to the school building in cm from helipad
 
 BACK_BRIDGE_DISTANCE = 620  # distance from helipad to back of bridge line in cm

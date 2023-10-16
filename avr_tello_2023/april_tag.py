@@ -4,6 +4,8 @@ import cv2
 import math
 from typing import List
 
+APRIL_TAG_DETECTION = False
+
 at_detector = Detector(
     families="tag36h11",
     nthreads=1,
@@ -31,7 +33,7 @@ def process_image(image, tags, targets):
     return image
 
 
-def draw_tag(image, tag, color, corner_01, corner_02, D_prime):
+def draw_tag(image, tag, color, corner_01, corner_02, D_prime) -> None:
     center = (int(tag.center[0]), int(tag.center[1]))
     corner_03 = (int(tag.corners[2][0]), int(tag.corners[2][1]))
     corner_04 = (int(tag.corners[3][0]), int(tag.corners[3][1]))
@@ -70,14 +72,63 @@ def draw_tag(image, tag, color, corner_01, corner_02, D_prime):
     )
 
 
-def target_action(tags, targets) -> List[int]:
+def calculate_alignment(tello, img, tags, targets):
+    """
+    - True: there's no need to align
+    - False: no april tag is detected
+    - [int, int]: amount to move left or right, and forward or backward, respectively
+    """
+    height, width, _ = img.shape
+    image_center = (width // 2, height // 2)
+
+    print("left right:", left_right)
+    print("up down:", up_down)
+    print("type of tags", type(tags))
+
     for tag in tags:
         if tag.tag_id in targets:
-            # TODO: Add commands for the drone's movement here
-            return [
-                0,
-                0,
-                0,
-                0,
-            ]
-    return [0, 0, 0, 0]
+            APRIL_TAG_DETECTION = False
+
+            object_center = (0, 0)  # TODO: Figure out a way to find this
+            # object_center = tag.center
+
+            # TODO: Convert the distances to distances that can actually be used for aligning the drone
+            left_right = object_center[0] - image_center[0]
+            forward_backward = object_center[1] - image_center[1]
+
+            APRIL_TAG_DETECTION = True
+
+            if -1 < left_right < 1 or -1 < forward_backward < 1:
+                return True
+            else:
+                return left_right, forward_backward
+
+    return False
+
+
+def align_tello(tello: Tello) -> None:
+    while True:
+        # since APRIL_TAG_DETECTION flag is turned on, we always get these
+        dbg_img, tags, targets = show_frames(tello)
+        amount_to_move = calculate_alignment(tello, dbg_img, tags, targets)
+
+        if amount_to_move is True:
+            break
+        elif amount_to_move is False:
+            # TODO: do something
+            continue
+        else:
+            left_right, forward_backward = amount_to_move
+
+            # actually aligning the tello
+            if left_right > 0:
+                tello.move_right(left_right)
+            else:
+                tello.move_left(-left_right)
+
+            if forward_backward > 0:
+                tello.move_forward(forward_backward)
+            else:
+                tello.move_back(-forward_backward)
+
+        sleep(1 / 2)

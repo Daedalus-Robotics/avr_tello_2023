@@ -15,7 +15,9 @@ from constants import (
     BACK_TO_MIDDLE_BRIDGE_DISTANCE,
     SCHOOL_DISTANCE,
 )
-from april_tag import at_detector, process_image, target_action
+from april_tag import at_detector, process_image, calculate_alignment, align_tello
+import smoke_jumper
+import april_tag
 
 
 def get_battery(tello: Tello) -> str:
@@ -28,37 +30,65 @@ def get_battery(tello: Tello) -> str:
     return f"Battery: {battery}%"
 
 
-def show_frames(tello: Tello) -> None:
+def get_frames(tello: Tello):
     frame_read = tello.get_frame_read()
     frame = frame_read.frame
     img = frame
     dbg_img = img
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    tags = at_detector.detect(
-        img, estimate_tag_pose=False, camera_params=None, tag_size=None
-    )
+    dbg_img = cv2.cvtColor(dbg_img, cv2.COLOR_BGR2RGB)
 
-    target = [6]
-    dbg_img = process_image(dbg_img, tags, target)
+    return img, dbg_img
 
-    # move the tello
-    tello.send_rc_control(*target_action(target))
+
+def _show_frame(img, dbg_img):
+    if april_tag.APRIL_TAG_DETECTION:
+        tags = at_detector.detect(
+            img, estimate_tag_pose=False, camera_params=None, tag_size=None
+        )
+
+        target = [6]
+        dbg_img = process_image(dbg_img, tags, target)
+
+        cv2.waitKey(1)
+        cv2.imshow("camera feed", dbg_img)
+
+        return dbg_img, tags, target
 
     cv2.waitKey(1)
     cv2.imshow("camera feed", dbg_img)
 
+    return None
+
+
+def show_frames(tello: Tello) -> None:
+    img, dbg_img = get_frames(tello)
+    return _show_frame(img, dbg_img)
+
 
 def enter_recon_path(tello: Tello) -> None:
+    april_tag.APRIL_TAG_DETECTION = True
+
     # first recon path
     tello.takeoff()
+
+    # TODO: Need april tag distance too!
+    tello.move_forward(0)
+    keyboard.wait("esc")
+
+    # Align the drone
+    align_tello(tello)
+
     tello.move_forward(SCHOOL_DISTANCE)
 
     # blocks until you press esc
-    # TODO: should I fix this later?
     keyboard.wait("esc")
 
-    # TODO: HERE IS WHERE CODE GO FOR PARACHUTE DROP
+    smoke_jumper.open_dropper()
+    smoke_jumper.close_dropper()
 
     tello.move_back(SCHOOL_DISTANCE)
     tello.land()
+
+    april_tag.APRIL_TAG_DETECTION = False
