@@ -81,14 +81,8 @@ def calculate_alignment(tello, img, tags, targets):
     height, width, _ = img.shape
     image_center = (width // 2, height // 2)
 
-    print("left right:", left_right)
-    print("up down:", up_down)
-    print("type of tags", type(tags))
-
     for tag in tags:
         if tag.tag_id in targets:
-            APRIL_TAG_DETECTION = False
-
             object_center = (0, 0)  # TODO: Figure out a way to find this
             # object_center = tag.center
 
@@ -96,12 +90,13 @@ def calculate_alignment(tello, img, tags, targets):
             left_right = object_center[0] - image_center[0]
             forward_backward = object_center[1] - image_center[1]
 
-            APRIL_TAG_DETECTION = True
+            print("left right:", left_right)
+            print("forward_backward:", forward_backward)
 
             if -1 < left_right < 1 or -1 < forward_backward < 1:
                 return True
-            else:
-                return left_right, forward_backward
+
+            return left_right, forward_backward
 
     return False
 
