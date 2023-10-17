@@ -67,6 +67,35 @@ def show_frames(tello: Tello) -> None:
     return _show_frame(img, dbg_img)
 
 
+def align_tello(tello: Tello) -> None:
+    while True:
+        # since APRIL_TAG_DETECTION flag is turned on, we always get these
+        dbg_img, tags, targets = show_frames(tello)
+        amount_to_move = calculate_alignment(dbg_img, tags, targets)
+
+        if amount_to_move is True:
+            break
+
+        if amount_to_move is False:
+            # TODO: do something
+            continue
+
+        left_right, forward_backward = amount_to_move
+
+        # actually aligning the tello
+        if left_right > 0:
+            tello.move_right(left_right)
+        else:
+            tello.move_left(-left_right)
+
+        if forward_backward > 0:
+            tello.move_forward(forward_backward)
+        else:
+            tello.move_back(-forward_backward)
+
+        sleep(1 / 2)
+
+
 def enter_recon_path(tello: Tello) -> None:
     april_tag.APRIL_TAG_DETECTION = True
 

@@ -72,7 +72,7 @@ def draw_tag(image, tag, color, corner_01, corner_02, D_prime) -> None:
     )
 
 
-def calculate_alignment(tello, img, tags, targets):
+def calculate_alignment(img, tags, targets) -> bool | [int, int]:
     """
     - True: there's no need to align
     - False: no april tag is detected
@@ -99,31 +99,3 @@ def calculate_alignment(tello, img, tags, targets):
             return left_right, forward_backward
 
     return False
-
-
-def align_tello(tello: Tello) -> None:
-    while True:
-        # since APRIL_TAG_DETECTION flag is turned on, we always get these
-        dbg_img, tags, targets = show_frames(tello)
-        amount_to_move = calculate_alignment(tello, dbg_img, tags, targets)
-
-        if amount_to_move is True:
-            break
-        elif amount_to_move is False:
-            # TODO: do something
-            continue
-        else:
-            left_right, forward_backward = amount_to_move
-
-            # actually aligning the tello
-            if left_right > 0:
-                tello.move_right(left_right)
-            else:
-                tello.move_left(-left_right)
-
-            if forward_backward > 0:
-                tello.move_forward(forward_backward)
-            else:
-                tello.move_back(-forward_backward)
-
-        sleep(1 / 2)
