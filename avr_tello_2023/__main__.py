@@ -88,10 +88,10 @@ if __name__ == "__main__":
     app = TelloGUI(tello)
 
     # disable Tello logger
-    Tello.LOGGER.disabled = True
+    # Tello.LOGGER.disabled = True
 
-    port = smoke_jumper.scan_ports()[0]
-    smoke_jumper.configure(port)
+    # port = smoke_jumper.scan_ports()[0]
+    # smoke_jumper.configure(port)
 
     try:
         app.run()

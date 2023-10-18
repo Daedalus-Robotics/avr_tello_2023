@@ -4,7 +4,7 @@ import cv2
 import math
 from typing import List
 
-APRIL_TAG_DETECTION = False
+APRIL_TAG_DETECTION = True
 
 at_detector = Detector(
     families="tag36h11",
@@ -37,6 +37,10 @@ def draw_tag(image, tag, color, corner_01, corner_02, D_prime) -> None:
     center = (int(tag.center[0]), int(tag.center[1]))
     corner_03 = (int(tag.corners[2][0]), int(tag.corners[2][1]))
     corner_04 = (int(tag.corners[3][0]), int(tag.corners[3][1]))
+    height, width, _ = image.shape
+    image_center = (width // 2, height // 2)
+
+    cv2.circle(image, image_center, 40, (0, 255, 0), 50)
     cv2.circle(image, (center[0], center[1]), 5, color, 5)
     cv2.line(
         image, (corner_01[0], corner_01[1]), (corner_02[0], corner_02[1]), color, 2
@@ -72,7 +76,7 @@ def draw_tag(image, tag, color, corner_01, corner_02, D_prime) -> None:
     )
 
 
-def calculate_alignment(img, tags, targets) -> bool | [int, int]:
+def calculate_alignment(img, tags, targets):
     """
     - True: there's no need to align
     - False: no april tag is detected
@@ -81,21 +85,19 @@ def calculate_alignment(img, tags, targets) -> bool | [int, int]:
     height, width, _ = img.shape
     image_center = (width // 2, height // 2)
 
+    # TODO: maybe fix this
+    cv2.circle(img, image_center, 5, (255, 0, 0), 5)
+
     for tag in tags:
         if tag.tag_id in targets:
-            object_center = (0, 0)  # TODO: Figure out a way to find this
-            # object_center = tag.center
+            object_center = tag.center
 
-            # TODO: Convert the distances to distances that can actually be used for aligning the drone
             left_right = object_center[0] - image_center[0]
             forward_backward = object_center[1] - image_center[1]
 
-            print("left right:", left_right)
-            print("forward_backward:", forward_backward)
-
-            if -1 < left_right < 1 or -1 < forward_backward < 1:
+            if -1 < left_right < 1 or -1 < forward_backward < 1:  # TODO: might change
                 return True
 
-            return left_right, forward_backward
+            return left_right // 10, forward_backward // 10  # TODO: might change
 
     return False
