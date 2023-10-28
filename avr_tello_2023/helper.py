@@ -2,6 +2,7 @@ from djitellopy import Tello, TelloException
 import cv2
 import keyboard
 from textual.app import App
+import numpy as np
 import serial
 
 from inspect import signature
@@ -17,9 +18,14 @@ from constants import (
     APRIL_SCHOOL,
     HELIPAD_APRIL,
 )
-from april_tag import at_detector, process_image, calculate_alignment
+from detection import (
+    at_detector,
+    process_image_A,
+    calculate_alignment_A,
+    calculate_alignment_H,
+    process_image_H,
+)
 import smoke_jumper
-import april_tag
 
 
 def get_battery(tello: Tello) -> str:
@@ -45,22 +51,38 @@ def get_frames(tello: Tello):
     return img, dbg_img
 
 
-def _show_frame(img, dbg_img, detection_type: str):
-    if april_tag.APRIL_TAG_DETECTION:
+def _show_frame(img, show_img, detection_type: str):
+    if detection_type == "A":
         tags = at_detector.detect(
             img, estimate_tag_pose=False, camera_params=None, tag_size=None
         )
 
         target = [6]
-        dbg_img = process_image(dbg_img, tags, target)
+        dbg_img = process_image_A(show_img, tags, target)
 
         cv2.waitKey(1)
         cv2.imshow("camera feed", dbg_img)
 
         return dbg_img, tags, target
+    else:
+        detected_circles = cv2.HoughCircles(
+            img,
+            cv2.HOUGH_GRADIENT,
+            1,
+            20,
+            param1=50,
+            param2=30,
+            minRadius=1,
+            maxRadius=40,
+        )
+        process_image_H(show_img, detected_circles)
+        cv2.waitKey(1)
+        cv2.imshow("camera feed", dbg_img)
+
+        return dbg_img, detected_circles
 
     cv2.waitKey(1)
-    cv2.imshow("camera feed", dbg_img)
+    cv2.imshow("camera feed", show_img)
 
     return None
 
@@ -73,9 +95,12 @@ def show_frames(tello: Tello, detection_type=None) -> None:
 def align_tello(tello: Tello, detection_type: str) -> bool:
     height_level = 1
     while True:
-        # since APRIL_TAG_DETECTION flag is turned on, we always get these
-        dbg_img, tags, targets = show_frames(tello, detection_type)
-        amount_to_move = calculate_alignment(dbg_img, tags, targets)
+        if detection_type == "A":
+            dbg_img, tags, targets = show_frames(tello, "A")
+            amount_to_move = calculate_alignment_A(dbg_img, tags, targets)
+        else:
+            dbg_img, detected_circles = show_frames(tello, "H")
+            amount_to_move = calculate_alignment_H(dbg_img, detected_circles)
 
         if amount_to_move is True:
             break
@@ -105,8 +130,6 @@ def align_tello(tello: Tello, detection_type: str) -> bool:
 
 
 def enter_recon_path(tello: Tello) -> None:
-    april_tag.APRIL_TAG_DETECTION = True
-
     tello.takeoff()
     # align Tello just after the takeoff
     align_tello(tello, "H")
@@ -137,5 +160,3 @@ def enter_recon_path(tello: Tello) -> None:
     align_tello(tello, "H")
 
     tello.land()
-
-    april_tag.APRIL_TAG_DETECTION = False

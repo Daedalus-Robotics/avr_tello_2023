@@ -40,7 +40,8 @@ class ManualModeScreen(ModalScreen):
         Binding(key="h", action="help"),
         Binding(key="q", action="quit(False)"),
         Binding(key="Q", action="quit(True)"),
-        Binding(key="n", action="align"),
+        Binding(key="n", action='align("A")'),
+        Binding(key="N", action='align("H")'),
     ]
 
     def __init__(self, tello: Tello, app: App, *args, **kwargs):
@@ -118,5 +119,5 @@ class ManualModeScreen(ModalScreen):
     def action_help(self) -> None:
         self.APP.push_help_screen()
 
-    def action_align(self) -> None:
-        pass
+    def action_align(self, l: str) -> None:
+        align_tello(self.TELLO, detection_type=l)

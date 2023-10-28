@@ -4,5 +4,6 @@ djitellopy~=2.5.0
 textual~=0.38.1
 pyserial~=3.5
 pupil-apriltags~=1.0.4.post10
+numpy~=1.23.4
 
 textual-dev~=1.1.0
