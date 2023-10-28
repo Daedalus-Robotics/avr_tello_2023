@@ -10,12 +10,14 @@ from djitellopy import Tello
 from typing import List
 from time import sleep
 
+from helper import align_tello
+
 
 class ManualModeScreen(ModalScreen):
     TELLO: Tello = None
 
     DISTANCE = 80
-    ROTATION = 30
+    ROTATION = 80
 
     vals = reactive([0, 0, 0, 0])
 
@@ -38,6 +40,7 @@ class ManualModeScreen(ModalScreen):
         Binding(key="h", action="help"),
         Binding(key="q", action="quit(False)"),
         Binding(key="Q", action="quit(True)"),
+        Binding(key="n", action="align"),
     ]
 
     def __init__(self, tello: Tello, app: App, *args, **kwargs):
@@ -79,7 +82,7 @@ class ManualModeScreen(ModalScreen):
 
     def validate_vals(self, vals) -> List[int]:
         self.TELLO.send_rc_control(*vals)
-        sleep(1 / 3)
+        sleep(1 / 10)
         self.TELLO.send_rc_control(0, 0, 0, 0)
         return [0, 0, 0, 0]
 
@@ -114,3 +117,6 @@ class ManualModeScreen(ModalScreen):
 
     def action_help(self) -> None:
         self.APP.push_help_screen()
+
+    def action_align(self) -> None:
+        pass

@@ -40,7 +40,7 @@ def get_frames(tello: Tello):
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     dbg_img = cv2.cvtColor(dbg_img, cv2.COLOR_BGR2RGB)
-    cv2.resize(dbg_img, 360, 240)
+    # cv2.resize(img, 360, 240)
 
     return img, dbg_img
 
@@ -85,7 +85,7 @@ def align_tello(tello: Tello, detection_type: str) -> bool:
                 return False
 
             # move Tello higher
-            tello.move_up(15)  # TODO: might change
+            tello.move_up(35)
 
             height_level += 1
             continue
@@ -102,8 +102,6 @@ def align_tello(tello: Tello, detection_type: str) -> bool:
             tello.move_forward(forward_backward)
         else:
             tello.move_back(-forward_backward)
-
-        sleep(1 / 2)
 
 
 def enter_recon_path(tello: Tello) -> None:

@@ -40,7 +40,7 @@ def draw_tag(image, tag, color, corner_01, corner_02, D_prime) -> None:
     height, width, _ = image.shape
     image_center = (width // 2, height // 2)
 
-    cv2.circle(image, image_center, 40, (0, 255, 0), 50)
+    cv2.circle(image, image_center, 15, (0, 255, 0), 20)
     cv2.circle(image, (center[0], center[1]), 5, color, 5)
     cv2.line(
         image, (corner_01[0], corner_01[1]), (corner_02[0], corner_02[1]), color, 2
@@ -98,6 +98,6 @@ def calculate_alignment(img, tags, targets):
             if -1 < left_right < 1 or -1 < forward_backward < 1:  # TODO: might change
                 return True
 
-            return left_right // 10, forward_backward // 10  # TODO: might change
+            return int(left_right), int(forward_backward)  # TODO: might change
 
     return False
