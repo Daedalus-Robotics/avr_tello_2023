@@ -93,6 +93,35 @@ def _draw_image_center(img):
     return image_center
 
 
+def _range_check(left_right, forward_backward) -> [int, int]:
+    left_right = int(left_right // 10)
+    forward_backward = int(forward_backward // 10)
+
+    if abs(left_right) < 20:
+        if left_right < 0:
+            left_right = -20
+        else:
+            left_right = 20
+    elif abs(left_right) > 100:
+        if left_right < 0:
+            left_right = -100
+        else:
+            left_right = 100
+
+    if abs(forward_backward) < 20:
+        if forward_backward < 0:
+            forward_backward = -20
+        else:
+            forward_backward = 20
+    elif abs(left_right) > 100:
+        if forward_backward < 0:
+            forward_backward = -100
+        else:
+            forward_backward = 100
+
+    return left_right, forward_backward
+
+
 def calculate_alignment_A(img, tags, targets):
     """
     - True: there's no need to align
@@ -104,13 +133,13 @@ def calculate_alignment_A(img, tags, targets):
         if tag.tag_id in targets:
             object_center = tag.center
 
-            left_right = object_center[0] - image_center[0]
-            forward_backward = object_center[1] - image_center[1]
+            left_right = image_center[0] - object_center[0]
+            forward_backward = image_center[1] - object_center[1]
 
             if -5 < left_right < 5 or -5 < forward_backward < 5:  # TODO: might change
                 return True
 
-            return int(left_right), int(forward_backward)  # TODO: might change
+            return _range_check(left_right, forward_backward)
 
     return False
 
@@ -127,12 +156,12 @@ def calculate_alignment_H(img, detected_circles):
         for pt in detected_circles[0, :]:
             x, y = pt[0], pt[1]
 
-            left_right = x - image_center[0]
-            forward_backward = y - image_center[1]
+            left_right = image_center[0] - x
+            forward_backward = image_center[1] - y
 
             if -5 < left_right < 5 or -5 < forward_backward < 5:  # TODO: might change
                 return True
 
-            return int(left_right), int(forward_backward)  # TODO: might change
+            return _range_check(left_right, forward_backward)
 
     return False

@@ -75,7 +75,7 @@ def _show_frame(img, show_img, detection_type: str):
             minRadius=1,
             maxRadius=40,
         )
-        process_image_H(show_img, detected_circles)
+        dbg_img = process_image_H(show_img, detected_circles)
         cv2.waitKey(1)
         cv2.imshow("camera feed", dbg_img)
 
@@ -87,7 +87,7 @@ def _show_frame(img, show_img, detection_type: str):
     return None
 
 
-def show_frames(tello: Tello, detection_type=None) -> None:
+def show_frames(tello: Tello, detection_type="A") -> None:
     img, dbg_img = get_frames(tello)
     return _show_frame(img, dbg_img, detection_type)
 
