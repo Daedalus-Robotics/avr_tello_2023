@@ -1,4 +1,5 @@
 from pupil_apriltags import Detector
+from djitellopy import Tello
 import cv2
 import numpy as np
 
@@ -21,9 +22,9 @@ def process_image_H(image, detected_circles):
         np.uint16(np.around(detected_circles))
         for pt in detected_circles[0, :]:
             x, y, r = pt[0], pt[1], pt[2]
-            cv2.circle(image, (x, y), r, (0, 255, 0), 2)
+            cv2.circle(image, (int(x), int(y)), int(r), (0, 255, 0), 2)
             # center
-            cv2.circle(image, (x, y), 1, (0, 0, 255), 3)
+            cv2.circle(image, (int(x), int(y)), 1, (0, 0, 255), 3)
         return image
 
 
@@ -94,8 +95,8 @@ def _draw_image_center(img):
 
 
 def _range_check(left_right, forward_backward) -> [int, int]:
-    left_right = int(left_right // 10)
-    forward_backward = int(forward_backward // 10)
+    left_right = int(left_right // 8)
+    forward_backward = int(forward_backward // 8)
 
     if abs(left_right) < 20:
         if left_right < 0:
@@ -129,17 +130,24 @@ def calculate_alignment_A(img, tags, targets):
     - [int, int]: amount to move left or right, and forward or backward, respectively
     """
     image_center = _draw_image_center(img)
+
+    # Tello.LOGGER.info(f"I: {image_center}")
+
     for tag in tags:
         if tag.tag_id in targets:
             object_center = tag.center
 
+            # Tello.LOGGER.info(f"O: {object_center}")
+
             left_right = image_center[0] - object_center[0]
             forward_backward = image_center[1] - object_center[1]
+            # left_right = object_center[0] - image_center[0]
+            # forward_backward = object_center[1] - image_center[1]
 
             if -5 < left_right < 5 or -5 < forward_backward < 5:  # TODO: might change
                 return True
 
-            return _range_check(left_right, forward_backward)
+            return _range_check(forward_backward, left_right)
 
     return False
 
@@ -162,6 +170,6 @@ def calculate_alignment_H(img, detected_circles):
             if -5 < left_right < 5 or -5 < forward_backward < 5:  # TODO: might change
                 return True
 
-            return _range_check(left_right, forward_backward)
+            return _range_check(forward_backward, left_right)
 
     return False

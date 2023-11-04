@@ -11,6 +11,7 @@ from typing import List
 from time import sleep
 
 from helper import align_tello
+import helper
 
 
 class ManualModeScreen(ModalScreen):
@@ -25,6 +26,8 @@ class ManualModeScreen(ModalScreen):
 
     CAMERA_DIRECTION = "forward"
 
+    DETECTION_T = "A"
+
     BINDINGS = [
         Binding(key="w", action=pressed.format(1, DISTANCE)),
         Binding(key="s", action=pressed.format(1, -DISTANCE)),
@@ -35,6 +38,7 @@ class ManualModeScreen(ModalScreen):
         Binding(key="A", action=pressed.format(3, -ROTATION)),
         Binding(key="D", action=pressed.format(3, ROTATION)),
         Binding(key="c", action="toggle_camara"),
+        Binding(key="C", action="toggle_detection"),
         Binding(key="t", action="takeoff"),
         Binding(key="l", action="land"),
         Binding(key="h", action="help"),
@@ -83,7 +87,7 @@ class ManualModeScreen(ModalScreen):
 
     def validate_vals(self, vals) -> List[int]:
         self.TELLO.send_rc_control(*vals)
-        sleep(1 / 10)
+        sleep(1 / 4)
         self.TELLO.send_rc_control(0, 0, 0, 0)
         return [0, 0, 0, 0]
 
@@ -121,3 +125,11 @@ class ManualModeScreen(ModalScreen):
 
     def action_align(self, l: str) -> None:
         align_tello(self.TELLO, detection_type=l)
+
+    def action_toggle_detection(self) -> None:
+        if self.DETECTION_T == "A":
+            helper.DETECTION_TYPE = "H"
+            self.DETECTION_T = "H"
+        else:
+            helper.DETECTION_TYPE = "A"
+            self.DETECTION_T = "A"

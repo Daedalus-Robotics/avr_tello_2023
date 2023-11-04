@@ -27,6 +27,8 @@ from detection import (
 )
 import smoke_jumper
 
+DETECTION_TYPE = "A"
+
 
 def get_battery(tello: Tello) -> str:
     try:
@@ -87,19 +89,21 @@ def _show_frame(img, show_img, detection_type: str):
     return None
 
 
-def show_frames(tello: Tello, detection_type="A") -> None:
+def show_frames(tello: Tello) -> None:
     img, dbg_img = get_frames(tello)
-    return _show_frame(img, dbg_img, detection_type)
+    return _show_frame(img, dbg_img, DETECTION_TYPE)
 
 
 def align_tello(tello: Tello, detection_type: str) -> bool:
     height_level = 1
     while True:
         if detection_type == "A":
-            dbg_img, tags, targets = show_frames(tello, "A")
+            DETECTION_TYPE = "A"
+            dbg_img, tags, targets = show_frames(tello)
             amount_to_move = calculate_alignment_A(dbg_img, tags, targets)
         else:
-            dbg_img, detected_circles = show_frames(tello, "H")
+            DETECTION_TYPE = "H"
+            dbg_img, detected_circles = show_frames(tello)
             amount_to_move = calculate_alignment_H(dbg_img, detected_circles)
 
         if amount_to_move is True:
