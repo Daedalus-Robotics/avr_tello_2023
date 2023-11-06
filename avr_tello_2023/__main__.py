@@ -85,13 +85,15 @@ if __name__ == "__main__":
     tello.connect()
     tello.streamon()
 
+    tello.send_command_with_return("downvision 1")
+
     app = TelloGUI(tello)
 
     # disable Tello logger
     # Tello.LOGGER.disabled = True
 
-    # port = smoke_jumper.scan_ports()[0]
-    # smoke_jumper.configure(port)
+    port = smoke_jumper.scan_ports()[0]
+    smoke_jumper.configure(port)
 
     try:
         app.run()

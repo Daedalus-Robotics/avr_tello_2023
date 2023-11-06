@@ -48,6 +48,12 @@ def get_frames(tello: Tello):
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     dbg_img = cv2.cvtColor(dbg_img, cv2.COLOR_BGR2RGB)
+
+    # lower_bound = np.array([0, 0, 0])
+    # upper_bound = np.array([350, 55, 100])
+
+    # img = cv2.inRange(img, lower_bound, upper_bound)
+
     # cv2.resize(img, 360, 240)
 
     return img, dbg_img
@@ -59,7 +65,7 @@ def _show_frame(img, show_img, detection_type: str):
             img, estimate_tag_pose=False, camera_params=None, tag_size=None
         )
 
-        target = [6]
+        target = [6, 2]
         dbg_img = process_image_A(show_img, tags, target)
 
         cv2.waitKey(1)
@@ -124,43 +130,53 @@ def align_tello(tello: Tello, detection_type: str) -> bool:
         # actually aligning the tello
         if left_right > 0:
             tello.move_right(left_right)
+            # tello.send_rc_control(0, -left_right, 0, 0)
         else:
             tello.move_left(-left_right)
+            # tello.send_rc_control(0, -left_right, 0, 0)
 
         if forward_backward > 0:
             tello.move_forward(forward_backward)
+            # tello.send_rc_control(-forward_backward, 0, 0, 0)
         else:
             tello.move_back(-forward_backward)
+            # tello.send_rc_control(-forward_backward, 0, 0, 0)
+
+        # sleep(1 / 10)
+        # tello.send_rc_control(0, 0, 0, 0)
 
 
 def enter_recon_path(tello: Tello) -> None:
     tello.takeoff()
     # align Tello just after the takeoff
-    align_tello(tello, "H")
+    # align_tello(tello, "H")
+
+    tello.move_up(100)  # TODO: might change
+    tello.move_up(50)  # TODO: might change
 
     # move to April Tag
-    tello.move_forward(HELIPAD_APRIL)
+    tello.move_forward(HELIPAD_APRIL + 5)  # TODO: Might change
     # align Tello to April Tag
     align_tello(tello, "A")
 
     # move to school (no need for alignment bc the distance is short)
-    tello.move_forward(APRIL_SCHOOL)
+    tello.move_forward(APRIL_SCHOOL + 20)  # TODO: might change
 
     # droping the smoke jumper
-    smoke_jumper.open_dropper()
     smoke_jumper.close_dropper()
+    sleep(3)
 
     # rotate Tello 180 degrees
     tello.rotate_clockwise(180)
 
     # move to April Tag
-    tello.move_forward(APRIL_SCHOOL)
+    tello.move_forward(APRIL_SCHOOL + 10)
     # align Tello to April Tag
     align_tello(tello, "A")
 
     # move to the helipad
     tello.move_forward(HELIPAD_APRIL)
     # align Tello before landing
-    align_tello(tello, "H")
+    # align_tello(tello, "H")
 
     tello.land()

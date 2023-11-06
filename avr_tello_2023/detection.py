@@ -137,12 +137,8 @@ def calculate_alignment_A(img, tags, targets):
         if tag.tag_id in targets:
             object_center = tag.center
 
-            # Tello.LOGGER.info(f"O: {object_center}")
-
             left_right = image_center[0] - object_center[0]
             forward_backward = image_center[1] - object_center[1]
-            # left_right = object_center[0] - image_center[0]
-            # forward_backward = object_center[1] - image_center[1]
 
             if -5 < left_right < 5 or -5 < forward_backward < 5:  # TODO: might change
                 return True
@@ -167,7 +163,9 @@ def calculate_alignment_H(img, detected_circles):
             left_right = image_center[0] - x
             forward_backward = image_center[1] - y
 
-            if -5 < left_right < 5 or -5 < forward_backward < 5:  # TODO: might change
+            if (
+                -10 < left_right < 10 or -10 < forward_backward < 10
+            ):  # TODO: might change
                 return True
 
             return _range_check(forward_backward, left_right)
