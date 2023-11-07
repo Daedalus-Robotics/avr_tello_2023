@@ -49,12 +49,11 @@ def get_frames(tello: Tello):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     dbg_img = cv2.cvtColor(dbg_img, cv2.COLOR_BGR2RGB)
 
-    # lower_bound = np.array([0, 0, 0])
-    # upper_bound = np.array([350, 55, 100])
+    # lower_bound = 100
+    # upper_bound = 200
 
-    # img = cv2.inRange(img, lower_bound, upper_bound)
-
-    # cv2.resize(img, 360, 240)
+    # mask = cv2.inRange(img, lower_bound, upper_bound)
+    # new_img = cv2.bitwise_and(img, img, mask=mask)
 
     return img, dbg_img
 
@@ -65,7 +64,7 @@ def _show_frame(img, show_img, detection_type: str):
             img, estimate_tag_pose=False, camera_params=None, tag_size=None
         )
 
-        target = [6, 2]
+        target = [6]
         dbg_img = process_image_A(show_img, tags, target)
 
         cv2.waitKey(1)
@@ -80,8 +79,8 @@ def _show_frame(img, show_img, detection_type: str):
             20,
             param1=50,
             param2=30,
-            minRadius=1,
-            maxRadius=40,
+            minRadius=10,
+            maxRadius=50,
         )
         dbg_img = process_image_H(show_img, detected_circles)
         cv2.waitKey(1)
@@ -102,6 +101,7 @@ def show_frames(tello: Tello) -> None:
 
 def align_tello(tello: Tello, detection_type: str) -> bool:
     height_level = 1
+    sleep(1)
     while True:
         if detection_type == "A":
             DETECTION_TYPE = "A"
@@ -113,14 +113,14 @@ def align_tello(tello: Tello, detection_type: str) -> bool:
             amount_to_move = calculate_alignment_H(dbg_img, detected_circles)
 
         if amount_to_move is True:
-            break
+            return True
 
         if amount_to_move is False:
-            if height_level == 3:  # TODO: might change
+            if height_level > 2:  # TODO: might change
                 return False
 
             # move Tello higher
-            tello.move_up(35)
+            tello.move_up(20)
 
             height_level += 1
             continue
@@ -151,11 +151,11 @@ def enter_recon_path(tello: Tello) -> None:
     # align Tello just after the takeoff
     # align_tello(tello, "H")
 
-    tello.move_up(100)  # TODO: might change
-    tello.move_up(50)  # TODO: might change
+    # tello.move_up(80)  # TODO: might change
+    # tello.move_up(30)  # TODO: might change
 
     # move to April Tag
-    tello.move_forward(HELIPAD_APRIL + 5)  # TODO: Might change
+    tello.move_forward(HELIPAD_APRIL + 20)  # TODO: Might change
     # align Tello to April Tag
     align_tello(tello, "A")
 
@@ -164,7 +164,8 @@ def enter_recon_path(tello: Tello) -> None:
 
     # droping the smoke jumper
     smoke_jumper.close_dropper()
-    sleep(3)
+    # sleep(3)
+    smoke_jumper.open_dropper()
 
     # rotate Tello 180 degrees
     tello.rotate_clockwise(180)

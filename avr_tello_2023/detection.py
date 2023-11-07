@@ -140,7 +140,12 @@ def calculate_alignment_A(img, tags, targets):
             left_right = image_center[0] - object_center[0]
             forward_backward = image_center[1] - object_center[1]
 
-            if -5 < left_right < 5 or -5 < forward_backward < 5:  # TODO: might change
+            Tello.LOGGER.info(f"left_right: {left_right}")
+            Tello.LOGGER.info(f"for_back: {forward_backward}")
+
+            if (
+                -20 < left_right < 20 or -20 < forward_backward < 20
+            ):  # TODO: might change
                 return True
 
             return _range_check(forward_backward, left_right)
