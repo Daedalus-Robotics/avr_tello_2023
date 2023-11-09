@@ -1,10 +1,11 @@
-from textual import events
+from textual import events, on
 from textual.binding import Binding
 from textual.app import ComposeResult, App
 from textual.screen import ModalScreen
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal, Vertical, Center
 from textual.widgets import Label, Button
 from textual.reactive import reactive
+from textual_slider import Slider
 from djitellopy import Tello
 
 from typing import List
@@ -53,34 +54,21 @@ class ManualModeScreen(ModalScreen):
         self.TELLO = tello
         self.APP = app
 
+    @on(Slider.Changed, "#brightness")
+    def on_change_brightness(self, event) -> None:
+        helper.BRIGHTNESS = self.query_one("#brightness", Slider).value
+        Tello.LOGGER.info(f"BRIGHTNESS: {helper.BRIGHTNESS}")
+
+    @on(Slider.Changed, "#contrast")
+    def on_change_contrast(self, event) -> None:
+        helper.CONTRAST = self.query_one("#contrast", Slider).value
+        Tello.LOGGER.info(f"CONTRAST: {helper.CONTRAST}")
+
     def compose(self) -> ComposeResult:
         widget = Vertical(
             Label('Enter "q" to quit Manual Mode', id="quitLabel"),
-            Button(
-                "Forward",
-                variant="primary",
-                id="forwardButton",
-                name="directionButtons",
-            ),
-            Horizontal(
-                Button(
-                    "Left", variant="primary", id="leftButton", name="directionButtons"
-                ),
-                Button(
-                    "Right",
-                    variant="primary",
-                    id="rightButton",
-                    name="directionButtons",
-                ),
-                id="leftRightHorizontal",
-            ),
-            Button(
-                "Backward",
-                variant="primary",
-                id="backwardButton",
-                name="directionButtons",
-            ),
-            id="manualModeScreenVertical",
+            Center(Slider(min=10, max=30, step=5, value=15, id="brightness")),
+            Center(Slider(min=1, max=5, step=1, value=1, id="contrast")),
         )
 
         yield widget

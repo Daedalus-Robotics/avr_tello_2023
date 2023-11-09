@@ -25,7 +25,7 @@ def process_image_H(image, detected_circles):
             cv2.circle(image, (int(x), int(y)), int(r), (0, 255, 0), 2)
             # center
             cv2.circle(image, (int(x), int(y)), 1, (0, 0, 255), 3)
-        return image
+    return image
 
 
 def process_image_A(image, tags, targets):
@@ -131,17 +131,12 @@ def calculate_alignment_A(img, tags, targets):
     """
     image_center = _draw_image_center(img)
 
-    # Tello.LOGGER.info(f"I: {image_center}")
-
     for tag in tags:
         if tag.tag_id in targets:
             object_center = tag.center
 
             left_right = image_center[0] - object_center[0]
             forward_backward = image_center[1] - object_center[1]
-
-            Tello.LOGGER.info(f"left_right: {left_right}")
-            Tello.LOGGER.info(f"for_back: {forward_backward}")
 
             if (
                 -20 < left_right < 20 or -20 < forward_backward < 20
