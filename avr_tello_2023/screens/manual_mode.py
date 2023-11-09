@@ -67,7 +67,7 @@ class ManualModeScreen(ModalScreen):
     def compose(self) -> ComposeResult:
         widget = Vertical(
             Label('Enter "q" to quit Manual Mode', id="quitLabel"),
-            Center(Slider(min=10, max=30, step=5, value=15, id="brightness")),
+            Center(Slider(min=10, max=20, step=1, value=19, id="brightness")),
             Center(Slider(min=1, max=5, step=1, value=1, id="contrast")),
         )
 

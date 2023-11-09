@@ -29,7 +29,7 @@ import smoke_jumper
 
 DETECTION_TYPE = "A"
 CONTRAST = 2
-BRIGHTNESS = 15
+BRIGHTNESS = 19
 
 
 def get_battery(tello: Tello) -> str:
