@@ -14,6 +14,8 @@ from time import sleep
 from helper import align_tello
 import helper
 
+import smoke_jumper
+
 
 class ManualModeScreen(ModalScreen):
     TELLO: Tello = None
@@ -47,6 +49,8 @@ class ManualModeScreen(ModalScreen):
         Binding(key="Q", action="quit(True)"),
         Binding(key="n", action='align("A")'),
         Binding(key="N", action='align("H")'),
+        Binding(key="o", action="drop"),
+        Binding(key="O", action="open"),
     ]
 
     def __init__(self, tello: Tello, app: App, *args, **kwargs):
@@ -67,8 +71,8 @@ class ManualModeScreen(ModalScreen):
     def compose(self) -> ComposeResult:
         widget = Vertical(
             Label('Enter "q" to quit Manual Mode', id="quitLabel"),
-            Center(Slider(min=10, max=20, step=1, value=19, id="brightness")),
-            Center(Slider(min=1, max=5, step=1, value=1, id="contrast")),
+            Center(Slider(min=10, max=35, step=1, value=19, id="brightness")),
+            Center(Slider(min=1, max=10, step=1, value=1, id="contrast")),
         )
 
         yield widget
@@ -121,3 +125,9 @@ class ManualModeScreen(ModalScreen):
         else:
             helper.DETECTION_TYPE = "A"
             self.DETECTION_T = "A"
+
+    def action_drop(self) -> None:
+        smoke_jumper.close_dropper()
+
+    def action_open(self) -> None:
+        smoke_jumper.open_dropper()

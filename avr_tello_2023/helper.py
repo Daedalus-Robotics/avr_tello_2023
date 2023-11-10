@@ -87,7 +87,7 @@ def _show_frame(img, show_img, detection_type: str):
 
 def show_frames(tello: Tello) -> None:
     img, dbg_img = get_frames(tello)
-    return _show_frame(img, dbg_img, "H")
+    return _show_frame(img, dbg_img, DETECTION_TYPE)
 
 
 def align_tello(tello: Tello, detection_type: str) -> bool:

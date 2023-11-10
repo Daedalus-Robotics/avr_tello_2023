@@ -14,7 +14,7 @@ import smoke_jumper
 class ReconPath(ModeChoice):
     TELLO: Tello = None
 
-    BUTTON_NAME = "Enter Recon Path"
+    BUTTON_NAME = "Recon Path"
     DESCRIPTION = "Phase 1 Recon path"
 
     def __init__(self, tello: Tello, *args, **kwargs):
