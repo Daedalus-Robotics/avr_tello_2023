@@ -60,7 +60,7 @@ def _show_frame(img, show_img, detection_type: str):
             img, estimate_tag_pose=False, camera_params=None, tag_size=None
         )
 
-        target = [6]
+        target = [6, 2]
         dbg_img = process_image_A(show_img, tags, target)
 
         cv2.waitKey(1)
