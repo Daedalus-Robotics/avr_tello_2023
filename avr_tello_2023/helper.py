@@ -34,8 +34,8 @@ def adjust_to_tello_rc(x: int, y: int, adjust: float = 0.785) -> tuple[int, int]
     return x, y
 
 
-def align_tello(tello: Tello, detection_type: str):
-    img, show_img = get_frames(tello)
+def align_tello(tello: Tello, frame_read, detection_type: str):
+    img, show_img = get_frames(frame_read)
     if detection_type == "A":
         tags, targets = show_april_tag(img, show_img)
         amount_to_move = calculate_alignment_A(img, tags, targets)
@@ -85,9 +85,6 @@ def show_square(img_for_detection, show_img):
             squares.append((x, y, w, h))
             cv2.rectangle(show_img, (x, y), (x + w, y + h), (36, 255, 12), 2)
 
-    cv2.imshow("CAMERA FEED", show_img)
-    cv2.waitKey(1)
-
     return squares
 
 
@@ -98,9 +95,6 @@ def show_april_tag(img_for_detection, show_img):
 
     targets = [6, 2]
     show_img = process_image_A(show_img, tags, targets)
-
-    cv2.imshow("CAMERA FEED", show_img)
-    cv2.waitKey(1)
 
     return tags, targets
 
@@ -120,14 +114,11 @@ def show_helipad(img_for_detection, show_img):
     )
     show_img = process_image_H(show_img, detected_circles)
 
-    cv2.imshow("CAMERA FEED", show_img)
-    cv2.waitKey(1)
-
     return detected_circles
 
 
-def show_frame(tello: Tello, detection_type: str):
-    img_for_detection, show_img = get_frames(tello)
+def show_frame(tello: Tello, frame_read, detection_type: str):
+    img_for_detection, show_img = get_frames(frame_read)
     if detection_type == "A":
         show_april_tag(img_for_detection, show_img)
     elif detection_type == "H":
@@ -135,12 +126,14 @@ def show_frame(tello: Tello, detection_type: str):
     else:
         show_square(img_for_detection, show_img)
 
+    cv2.imshow("CAMERA FEED", show_img)
+    cv2.waitKey(1)
 
-def get_frames(tello: Tello):
-    frame_read = tello.get_frame_read()
+
+def get_frames(frame_read):
     frame = frame_read.frame
     img = frame
-    show_img = img
+    show_img = np.copy(img)
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     if not DIRECTION:
@@ -157,7 +150,7 @@ def enter_recon_path(tello: Tello) -> None:
     tello.move_forward(HELIPAD_APRIL + APRIL_SCHOOL)
 
     # TODO: maybe add school alignment
-    align_tello(tello, "S")
+    align_tello(tello, tello.get_frame_read(), "S")
 
     # smoke_jumper.close_dropper()
     sleep(5)

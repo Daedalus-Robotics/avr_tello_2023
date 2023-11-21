@@ -47,41 +47,40 @@ def setup_controller(dualsense: Dualsense) -> None:
 
 def run_app(tello: Tello) -> None:
     detection_type = "A"
-    camera_direction = True
+    frame_read = tello.get_frame_read()
 
     while True:
-        show_frame(tello, detection_type)
-        match keyboard.read_key():
-            case "a":
-                align_tello(tello, "A")
-            case "A":
-                align_tello(tello, "H")
-            case "s":
-                align_tello(tello, "S")
-            case "B":
-                battery = tello.get_battery()
-                Tello.LOGGER.info(f"Tello battery: {battery}%")
-            case "c":
-                if camera_direction:
-                    tello.set_video_direction(Tello.CAMERA_FORWARD)
-                    helper.DIRECTION = False
-                else:
-                    tello.set_video_direction(Tello.CAMERA_DOWNWARD)
-                    camera_direction = not camera_direction
-                    helper.DIRECTION = True
-            case "d":
-                if detection_type == "A":
-                    detection_type = "H"
-                else:
-                    detection_type = "A"
-            case "D":
-                detection_type = "S"
-            case "r":
-                enter_recon_path(tello)
-            case "q":
-                break
-            case "Q":
-                tello.emergency()
+        # if keyboard.is_pressed("a"):
+        #     align_tello(tello, frame_read, "A")
+        # elif keyboard.is_pressed("A"):
+        #     align_tello(tello, frame_read, "H")
+        # elif keyboard.is_pressed("s"):
+        #     align_tello(tello, frame_read, "S")
+        # elif keyboard.is_pressed("B"):
+        #     battery = tello.get_battery()
+        #     Tello.LOGGER.info(f"Tello battery: {battery}%")
+        # elif keyboard.is_pressed("c"):
+        #     if helper.DIRECTION:
+        #         tello.set_video_direction(Tello.CAMERA_FORWARD)
+        #         helper.DIRECTION = False
+        #     else:
+        #         tello.set_video_direction(Tello.CAMERA_DOWNWARD)
+        #         helper.DIRECTION = True
+        # elif keyboard.is_pressed("d"):
+        #     if detection_type == "A":
+        #         detection_type = "H"
+        #     else:
+        #         detection_type = "A"
+        # elif keyboard.is_pressed("D"):
+        #     detection_type = "S"
+        # elif keyboard.is_pressed("r"):
+        #     enter_recon_path(tello)
+        # elif keyboard.is_pressed("q"):
+        #     break
+        # elif keyboard.is_pressed("Q"):
+        #     tello.emergency()
+        show_frame(tello, frame_read, detection_type)
+        sleep(0.1)
 
 
 if __name__ == "__main__":
