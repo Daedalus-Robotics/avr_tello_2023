@@ -1,101 +1,113 @@
 from djitellopy import Tello
-from textual.app import App, ComposeResult
-from textual.containers import VerticalScroll
-from textual.widgets import Header, Footer, Label
-from textual.binding import Binding
-from textual import events
+import keyboard
 
-from helper import show_frames, enter_recon_path
-from base_widgets import ModeChoice
-from screens import QuitScreen, ManualModeScreen, StateScreen, HelpScreen
-import smoke_jumper
+from helper import (
+    align_tello,
+    enter_recon_path,
+    clamp_x_y,
+    adjust_to_tello_rc,
+)
+from pythondualsense import Dualsense
+import helper
 
-
-class ReconPath(ModeChoice):
-    TELLO: Tello = None
-
-    BUTTON_NAME = "Recon Path"
-    DESCRIPTION = "Phase 1 Recon path"
-
-    def __init__(self, tello: Tello, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.TELLO = tello
-
-    def what_to_do_on_button_pressed(self) -> None:
-        enter_recon_path(self.TELLO)
-
-    # TODO: implement stop_action method
-    def stop_action(self) -> None:
-        pass
+from smoke_jumper import scan_ports, configure
+from smoke_jumper import close_dropper as drop
+from smoke_jumper import open_dropper as close_dropper
+from helper import show_frame
+from sys import exit
+from time import sleep
 
 
-class TelloGUI(App):
-    """Textual app to manage tello drones"""
+def move_tello_x_y(pos: tuple[int, int]) -> None:
+    (x, y) = clamp_x_y(*pos)
+    (x, y) = adjust_to_tello_rc(x, y)
+    tello.send_rc_control(x, -y, 0, 0)
 
-    CSS_PATH = "style.tcss"
-    BINDINGS = [
-        Binding(key="q", action="request_quit", description="Quit the app"),
-        Binding(key="m", action="request_manual", description="Enter Manual Mode"),
-        Binding(key="s", action="request_state", description="Show the state of Tello"),
-        Binding(key="d", action="toggle_dark", description="Toggle dark mode"),
-    ]
 
-    TELLO: Tello = None
+def move_tello_z(pos: tuple[int, int]) -> None:
+    (x, y) = clamp_x_y(*pos)
+    (x, y) = adjust_to_tello_rc(x, y)
+    tello.send_rc_control(0, 0, -y, x)
 
-    def __init__(self, tello: Tello, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.TELLO = tello
 
-    def show_frames(self):
-        show_frames(self.TELLO)
+def drop_smokejumper() -> None:
+    drop()
+    sleep(1)
+    close_dropper()
 
-    def compose(self) -> ComposeResult:
-        yield Header()
-        yield Footer()
-        with VerticalScroll():
-            yield ReconPath(self.TELLO)
 
-    async def on_mount(self) -> None:
-        self.sub_title = "by Nobu :)"
-        self.set_interval(0.3, self.show_frames)
+def setup_controller(dualsense: Dualsense) -> None:
+    dualsense.right_stick.on_move.register(move_tello_x_y)
+    dualsense.left_stick.on_move.register(move_tello_z)
+    dualsense.left_bumper.on_press.register(tello.takeoff)
+    dualsense.right_bumper.on_press.register(tello.land)
+    dualsense.right_trigger.on_press.register(drop_smokejumper)
+    dualsense.triangle.on_press.register(tello.send_keepalive)
 
-    def action_toggle_dark(self) -> None:
-        """An action to toggle dark mode"""
-        self.dark = not self.dark
 
-    def _check_quit(self, quit: bool) -> None:
-        if quit:
-            self.exit()
+def run_app(tello: Tello) -> None:
+    detection_type = "A"
+    camera_direction = True
 
-    async def action_request_quit(self) -> None:
-        self.push_screen(QuitScreen(), self._check_quit)
-
-    async def action_request_manual(self) -> None:
-        self.push_screen(ManualModeScreen(self.TELLO, self))
-
-    async def action_request_state(self) -> None:
-        self.push_screen(StateScreen(self.TELLO))
-
-    def push_help_screen(self) -> None:
-        self.push_screen(HelpScreen())
+    while True:
+        show_frame(tello, detection_type)
+        match keyboard.read_key():
+            case "a":
+                align_tello(tello, "A")
+            case "A":
+                align_tello(tello, "H")
+            case "s":
+                align_tello(tello, "S")
+            case "B":
+                battery = tello.get_battery()
+                Tello.LOGGER.info(f"Tello battery: {battery}%")
+            case "c":
+                if camera_direction:
+                    tello.set_video_direction(Tello.CAMERA_FORWARD)
+                    helper.DIRECTION = False
+                else:
+                    tello.set_video_direction(Tello.CAMERA_DOWNWARD)
+                    camera_direction = not camera_direction
+                    helper.DIRECTION = True
+            case "d":
+                if detection_type == "A":
+                    detection_type = "H"
+                else:
+                    detection_type = "A"
+            case "D":
+                detection_type = "S"
+            case "r":
+                enter_recon_path(tello)
+            case "q":
+                break
+            case "Q":
+                tello.emergency()
 
 
 if __name__ == "__main__":
     tello = Tello()
     tello.connect()
     tello.streamon()
+    # tello.set_video_fps(Tello.FPS_30)
 
-    tello.send_command_with_return("downvision 1")
-
-    app = TelloGUI(tello)
+    tello.set_video_direction(Tello.CAMERA_DOWNWARD)
 
     # disable Tello logger
-    # Tello.LOGGER.disabled = True
+    Tello.LOGGER.disabled = True
 
-    port = smoke_jumper.scan_ports()[0]
-    smoke_jumper.configure(port)
+    # port = scan_ports()[0]
+    # configure(port)
+
+    # set up for the controller
+    # dualsense_controller = Dualsense()
+    # dualsense_controller.open()
+    # setup_controller(dualsense_controller)
+
+    # if not dualsense_controller.is_open:
+    #     Tello.LOGGER.error("Dualsense controller not connected")
+    #     exit(1)
 
     try:
-        app.run()
+        run_app(tello)
     finally:
         tello.end()

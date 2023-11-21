@@ -1,10 +1,8 @@
 from pupil_apriltags import Detector
-from djitellopy import Tello
 import cv2
 import numpy as np
 
 import math
-from typing import List
 
 at_detector = Detector(
     families="tag36h11",
@@ -38,13 +36,13 @@ def process_image_A(image, tags, targets):
                 (corner_02[0] - corner_01[0]) ** 2 + (corner_02[1] - corner_01[1]) ** 2
             )
             d_prime = (w * 955) / p
-            draw_tag(image, tag, (0, 0, 255), corner_01, corner_02, str(d_prime))
+            _draw_tag(image, tag, (0, 0, 255), corner_01, corner_02, str(d_prime))
         else:
-            draw_tag(image, tag, (0, 255, 0), corner_01, corner_02, "-")
+            _draw_tag(image, tag, (0, 255, 0), corner_01, corner_02, "-")
     return image
 
 
-def draw_tag(image, tag, color, corner_01, corner_02, D_prime) -> None:
+def _draw_tag(image, tag, color, corner_01, corner_02, D_prime) -> None:
     center = (int(tag.center[0]), int(tag.center[1]))
     corner_03 = (int(tag.corners[2][0]), int(tag.corners[2][1]))
     corner_04 = (int(tag.corners[3][0]), int(tag.corners[3][1]))
@@ -88,13 +86,13 @@ def draw_tag(image, tag, color, corner_01, corner_02, D_prime) -> None:
 
 
 def _draw_image_center(img):
-    height, width, _ = img.shape
+    height, width = img.shape
     image_center = (width // 2, height // 2)
     cv2.circle(img, image_center, 5, (255, 0, 0), 5)
     return image_center
 
 
-def _range_check(left_right, forward_backward) -> [int, int]:
+def _range_check(left_right, forward_backward) -> tuple[int, int]:
     left_right = int(left_right // 8)
     forward_backward = int(forward_backward // 8)
 
@@ -124,13 +122,7 @@ def _range_check(left_right, forward_backward) -> [int, int]:
 
 
 def calculate_alignment_A(img, tags, targets):
-    """
-    - True: there's no need to align
-    - False: no april tag is detected
-    - [int, int]: amount to move left or right, and forward or backward, respectively
-    """
     image_center = _draw_image_center(img)
-
     for tag in tags:
         if tag.tag_id in targets:
             object_center = tag.center
@@ -141,19 +133,14 @@ def calculate_alignment_A(img, tags, targets):
             if (
                 -20 < left_right < 20 or -20 < forward_backward < 20
             ):  # TODO: might change
-                return True
+                return None
 
             return _range_check(forward_backward, left_right)
 
-    return False
+    return None
 
 
 def calculate_alignment_H(img, detected_circles):
-    """
-    - True: there's no need to align
-    - False: no circle (helipad) detected
-    - [int, int]: amount to move left or right, and forwared or backward, respectively
-    """
     image_center = _draw_image_center(img)
     if detected_circles is not None:
         np.uint16(np.around(detected_circles))
@@ -166,8 +153,25 @@ def calculate_alignment_H(img, detected_circles):
             if (
                 -10 < left_right < 10 or -10 < forward_backward < 10
             ):  # TODO: might change
-                return True
+                return None
 
             return _range_check(forward_backward, left_right)
 
-    return False
+    return None
+
+
+def calculate_alignment_S(img, squares):
+    image_center = _draw_image_center(img)
+    if len(squares) > 0:
+        (x, y, w, h) = squares[0]
+        obj_center = (w // 2 + x, h // 2 + y)
+
+        left_right = image_center[0] - obj_center[0]
+        forward_backward = image_center[1] - obj_center[1]
+
+        if -20 < left_right < 20 or -20 < forward_backward < 20:  # TODO: might change
+            return None
+
+        return _range_check(forward_backward, left_right)
+
+    return None
