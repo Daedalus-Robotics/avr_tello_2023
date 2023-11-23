@@ -149,12 +149,11 @@ def enter_recon_path(tello: Tello) -> None:
     # go straight to the school
     tello.move_forward(HELIPAD_APRIL + APRIL_SCHOOL)
 
-    # TODO: maybe add school alignment
     align_tello(tello, tello.get_frame_read(), "S")
 
-    # smoke_jumper.close_dropper()
-    sleep(5)
-    # smoke_jumper.open_dropper()
+    smoke_jumper.close_dropper()
+    sleep(2)
+    smoke_jumper.open_dropper()
 
     tello.move_back(HELIPAD_APRIL + APRIL_SCHOOL)
 
