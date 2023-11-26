@@ -16,12 +16,13 @@ from smoke_jumper import open_dropper as close_dropper
 from helper import show_frame
 from sys import exit
 from time import sleep
-from threading import Thread
+from threading import Thread, Timer
 
 
 def move_tello_x_y(pos: tuple[int, int]) -> None:
     (x, y) = clamp_x_y(*pos)
     (x, y) = adjust_to_tello_rc(x, y)
+    print(x, y)
     tello.send_rc_control(x, -y, 0, 0)
 
 
@@ -40,10 +41,11 @@ def drop_smokejumper() -> None:
 def setup_controller(dualsense: Dualsense) -> None:
     dualsense.right_stick.on_move.register(move_tello_x_y)
     dualsense.left_stick.on_move.register(move_tello_z)
-    dualsense.left_bumper.on_press.register(tello.takeoff)
-    dualsense.right_bumper.on_press.register(tello.land)
-    dualsense.right_trigger.on_press.register(drop_smokejumper)
+    dualsense.square.on_press.register(tello.takeoff)
+    dualsense.circle.on_press.register(tello.land)
+    dualsense.cross.on_press.register(drop_smokejumper)
     dualsense.triangle.on_press.register(tello.send_keepalive)
+    dualsense.left_bumper.on_press.register(lambda: print("preseed!"))
 
 
 def run_app(tello: Tello) -> None:
@@ -53,6 +55,8 @@ def run_app(tello: Tello) -> None:
     while True:
         if keyboard.is_pressed("a"):
             align_tello(tello, frame_read, "A")
+        elif keyboard.is_pressed("p"):
+            drop_smokejumper()
         elif keyboard.is_pressed("A"):
             align_tello(tello, frame_read, "H")
         elif keyboard.is_pressed("s"):
@@ -75,6 +79,9 @@ def run_app(tello: Tello) -> None:
         elif keyboard.is_pressed("D"):
             detection_type = "S"
         elif keyboard.is_pressed("r"):
+            # start the timer for automatically dropping the smoke jumper
+            timer = Timer(28, drop_smokejumper)
+            timer.start()
             # run in a thread
             Thread(target=enter_recon_path, args=(tello,)).start()
         elif keyboard.is_pressed("q"):
@@ -82,7 +89,7 @@ def run_app(tello: Tello) -> None:
         elif keyboard.is_pressed("Q"):
             tello.emergency()
 
-        show_frame(tello, frame_read, detection_type)
+        show_frame(tello, frame_read, "S")
 
 
 if __name__ == "__main__":

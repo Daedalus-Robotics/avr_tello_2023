@@ -160,10 +160,10 @@ def calculate_alignment_H(img, detected_circles):
     return None
 
 
-def calculate_alignment_S(img, squares):
+def calculate_alignment_S(img, square):
     image_center = _draw_image_center(img)
-    if len(squares) > 0:
-        (x, y, w, h) = squares[0]
+    if square is not None:
+        (x, y, w, h) = square
         obj_center = (w // 2 + x, h // 2 + y)
 
         left_right = image_center[0] - obj_center[0]

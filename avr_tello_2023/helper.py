@@ -3,8 +3,6 @@ import cv2
 import numpy as np
 
 from time import sleep
-from threading import Thread
-
 import smoke_jumper
 from detection import (
     process_image_A,
@@ -43,8 +41,8 @@ def align_tello(tello: Tello, frame_read, detection_type: str):
         detected_circles = show_helipad(img, show_img)
         amount_to_move = calculate_alignment_H(img, detected_circles)
     else:
-        squares = show_square(img, show_img)
-        amount_to_move = calculate_alignment_S(img, squares)
+        square = show_square(img, show_img)
+        amount_to_move = calculate_alignment_S(img, square)
 
     if amount_to_move is None:
         return
@@ -64,28 +62,44 @@ def align_tello(tello: Tello, frame_read, detection_type: str):
 
 
 def show_square(img_for_detection, show_img):
-    blur = cv2.medianBlur(img_for_detection, 5)
-    sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-    sharpen = cv2.filter2D(blur, -1, sharpen_kernel)
+    # blur = cv2.medianBlur(img_for_detection, 3)
+    # sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+    # sharpen = cv2.filter2D(blur, -1, sharpen_kernel)
 
-    # threshold and morph close
-    thresh = cv2.threshold(sharpen, 160, 255, cv2.THRESH_BINARY_INV)[1]
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    close = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations=2)
+    # # threshold and morph close
+    # thresh = cv2.threshold(sharpen, 160, 255, cv2.THRESH_BINARY_INV)[1]
+    # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    # close = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations=1)
+
+    # final = cv2.GaussianBlur(img_for_detection, 5)
+    #
+    thresh = 20
+    final = cv2.medianBlur(img_for_detection, 5)
+    _, final = cv2.threshold(final, thresh, 255, 1)
 
     # Find contours and filter using threshold area
-    cnts = cv2.findContours(close, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cv2.findContours(final, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
 
-    squares: list[tuple[int, int, int, int]] = []
+    squares = []
     for c in cnts:
+        x, y, w, h = cv2.boundingRect(c)
         area = cv2.contourArea(c)
-        if MIN_AREA < area < MAX_AREA:
-            x, y, w, h = cv2.boundingRect(c)
-            squares.append((x, y, w, h))
-            cv2.rectangle(show_img, (x, y), (x + w, y + h), (36, 255, 12), 2)
+        if -50 < (x + w) - (y + h) < 50 and 4000 < area < 13000:
+            squares.append(c)
 
-    return squares
+    areas = [cv2.contourArea(c) for c in squares]
+
+    if len(areas) == 0:
+        return None
+
+    index = areas.index(max(areas))
+    if len(cnts) > 0:
+        c = squares[index]
+        x, y, w, h = cv2.boundingRect(c)
+        cv2.rectangle(show_img, (x, y), (x + w, y + h), (36, 255, 12), 2)
+
+    return cv2.boundingRect(squares[index])
 
 
 def show_april_tag(img_for_detection, show_img):
@@ -106,10 +120,10 @@ def show_helipad(img_for_detection, show_img):
         img,
         cv2.HOUGH_GRADIENT,
         1,
-        50,
+        100,
         param1=30,
         param2=50,
-        minRadius=3,
+        minRadius=20,
         maxRadius=100,
     )
     show_img = process_image_H(show_img, detected_circles)
@@ -144,17 +158,13 @@ def get_frames(frame_read):
 
 def enter_recon_path(tello: Tello) -> None:
     tello.takeoff()
-    tello.move_up(60)
+    tello.move_up(80)
 
     # go straight to the school
-    tello.move_forward(HELIPAD_APRIL + APRIL_SCHOOL)
+    tello.move_forward(HELIPAD_APRIL + APRIL_SCHOOL + 20)
 
     align_tello(tello, tello.get_frame_read(), "S")
 
     smoke_jumper.close_dropper()
     sleep(2)
     smoke_jumper.open_dropper()
-
-    tello.move_back(HELIPAD_APRIL + APRIL_SCHOOL)
-
-    tello.land()
