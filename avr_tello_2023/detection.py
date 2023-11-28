@@ -99,17 +99,17 @@ def _range_check(left_right, forward_backward) -> tuple[int, int]:
     move_x = int(left_right * x)
     move_y = int(forward_backward * y)
 
-    if -20 < move_x < 20:
-        if move_x < 0:
-            move_x = -20
-        else:
-            move_x = 20
+    # if -20 < move_x < 20:
+    #     if move_x < 0:
+    #         move_x = -20
+    #     else:
+    #         move_x = 20
 
-    if -20 < move_y < 20:
-        if move_y < 0:
-            move_y = -20
-        else:
-            move_y = 20
+    # if -20 < move_y < 20:
+    #     if move_y < 0:
+    #         move_y = -20
+    #     else:
+    #         move_y = 20
 
     print(f"x, y: {move_x}, {move_y}")
 

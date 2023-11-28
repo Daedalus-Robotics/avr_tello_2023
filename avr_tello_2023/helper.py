@@ -1,5 +1,6 @@
 from djitellopy import Tello
 import cv2
+from keyboard import send
 import numpy as np
 
 from time import sleep
@@ -34,7 +35,7 @@ def adjust_to_tello_rc(x: int, y: int, adjust: float = 0.785) -> tuple[int, int]
 
 
 def align_tello(tello: Tello, frame_read, detection_type: str):
-    for _ in range(3):
+    for _ in range(10):
         img, show_img = get_frames(frame_read)
         if detection_type == "A":
             tags, targets = show_april_tag(img, show_img)
@@ -54,15 +55,39 @@ def align_tello(tello: Tello, frame_read, detection_type: str):
 
         # actually aligning the tello
         if left_right > 0:
+            if left_right < 20:
+                tello.send_rc_control(50, 0, 0, 0)
+                sleep(0.2)
+                tello.send_rc_control(0, 0, 0, 0)
+                continue
+
             tello.move_right(left_right)
         elif left_right < 0:
+            if left_right > -20:
+                tello.send_rc_control(-50, 0, 0, 0)
+                sleep(0.2)
+                tello.send_rc_control(0, 0, 0, 0)
+                continue
+
             tello.move_left(-left_right)
 
         sleep(3)
 
         if forward_backward > 0:
+            if forward_backward < 20:
+                tello.send_rc_control(0, -50, 0, 0)
+                sleep(0.5)
+                tello.send_rc_control(0, 0, 0, 0)
+                continue
+
             tello.move_forward(forward_backward)
         elif forward_backward < 0:
+            if left_right > -20:
+                tello.send_rc_control(0, 50, 0, 0)
+                sleep(0.5)
+                tello.send_rc_control(0, 0, 0, 0)
+                continue
+
             tello.move_back(-forward_backward)
 
 
@@ -154,10 +179,10 @@ def get_frames(frame_read):
 
 def enter_recon_path(tello: Tello) -> None:
     tello.takeoff()
-    tello.move_up(23)
+    tello.move_up(50)
 
     # go straight to the school
-    tello.move_forward(HELIPAD_APRIL + APRIL_SCHOOL + 40)
+    tello.move_forward(HELIPAD_APRIL + APRIL_SCHOOL + 60)
 
     align_tello(tello, tello.get_frame_read(), "S")
 
