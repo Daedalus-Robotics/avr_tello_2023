@@ -88,37 +88,32 @@ def _draw_tag(image, tag, color, corner_01, corner_02, D_prime) -> None:
 def _draw_image_center(img):
     height, width = img.shape
     image_center = (width // 2, height // 2)
-    cv2.circle(img, image_center, 5, (255, 0, 0), 5)
+    cv2.circle(img, image_center, 5, (255, 0, 0), 15)
     return image_center
 
 
 def _range_check(left_right, forward_backward) -> tuple[int, int]:
-    left_right = int(left_right // 8)
-    forward_backward = int(forward_backward // 8)
+    y = 0.5833
+    x = 0.7625
 
-    if abs(left_right) < 20:
-        if left_right < 0:
-            left_right = -20
-        else:
-            left_right = 20
-    elif abs(left_right) > 100:
-        if left_right < 0:
-            left_right = -100
-        else:
-            left_right = 100
+    move_x = int(left_right * x)
+    move_y = int(forward_backward * y)
 
-    if abs(forward_backward) < 20:
-        if forward_backward < 0:
-            forward_backward = -20
+    if -20 < move_x < 20:
+        if move_x < 0:
+            move_x = -20
         else:
-            forward_backward = 20
-    elif abs(left_right) > 100:
-        if forward_backward < 0:
-            forward_backward = -100
-        else:
-            forward_backward = 100
+            move_x = 20
 
-    return left_right, forward_backward
+    if -20 < move_y < 20:
+        if move_y < 0:
+            move_y = -20
+        else:
+            move_y = 20
+
+    print(f"x, y: {move_x}, {move_y}")
+
+    return move_x, move_y
 
 
 def calculate_alignment_A(img, tags, targets):
@@ -155,23 +150,36 @@ def calculate_alignment_H(img, detected_circles):
             ):  # TODO: might change
                 return None
 
+            # flipped
             return _range_check(forward_backward, left_right)
 
     return None
 
 
 def calculate_alignment_S(img, square):
-    image_center = _draw_image_center(img)
+    # image_center = _draw_image_center(img)
+
+    try:
+        height, width, _ = img.shape
+    except ValueError:
+        height, width = img.shape
+
+    image_center = (width // 2, height // 2)
+    cv2.circle(img, image_center, 5, (0, 0, 255), 5)
+
     if square is not None:
         (x, y, w, h) = square
         obj_center = (w // 2 + x, h // 2 + y)
 
-        left_right = image_center[0] - obj_center[0]
-        forward_backward = image_center[1] - obj_center[1]
+        # square's center
+        cv2.circle(img, obj_center, 10, (100, 200, 100))
 
-        if -20 < left_right < 20 or -20 < forward_backward < 20:  # TODO: might change
+        x = image_center[0] - obj_center[0]
+        y = image_center[1] - obj_center[1]
+
+        if -15 < x < 15 and -15 < y < 15:  # TODO: might change
             return None
 
-        return _range_check(forward_backward, left_right)
+        return _range_check(x, y)
 
     return None

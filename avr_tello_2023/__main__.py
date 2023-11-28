@@ -22,7 +22,7 @@ from threading import Thread, Timer
 def move_tello_x_y(pos: tuple[int, int]) -> None:
     (x, y) = clamp_x_y(*pos)
     (x, y) = adjust_to_tello_rc(x, y)
-    print(x, y)
+    # print(x, y)
     tello.send_rc_control(x, -y, 0, 0)
 
 
@@ -45,7 +45,6 @@ def setup_controller(dualsense: Dualsense) -> None:
     dualsense.circle.on_press.register(tello.land)
     dualsense.cross.on_press.register(drop_smokejumper)
     dualsense.triangle.on_press.register(tello.send_keepalive)
-    dualsense.left_bumper.on_press.register(lambda: print("preseed!"))
 
 
 def run_app(tello: Tello) -> None:
@@ -55,13 +54,17 @@ def run_app(tello: Tello) -> None:
     while True:
         if keyboard.is_pressed("a"):
             align_tello(tello, frame_read, "A")
+        elif keyboard.is_pressed("t"):
+            tello.takeoff()
+            tello.move_up(50)
+            align_tello(tello, tello.get_frame_read(), "S")
         elif keyboard.is_pressed("p"):
             drop_smokejumper()
         elif keyboard.is_pressed("A"):
             align_tello(tello, frame_read, "H")
         elif keyboard.is_pressed("s"):
             align_tello(tello, frame_read, "S")
-        elif keyboard.is_pressed("B"):
+        elif keyboard.is_pressed("b"):
             battery = tello.get_battery()
             Tello.LOGGER.info(f"Tello battery: {battery}%")
         elif keyboard.is_pressed("c"):
@@ -104,17 +107,17 @@ if __name__ == "__main__":
     Tello.LOGGER.disabled = True
 
     # smoke juper set up
-    port = scan_ports()[0]
-    configure(port)
+    # port = scan_ports()[0]
+    # configure(port)
 
     # set up for the controller
-    dualsense_controller = Dualsense()
-    dualsense_controller.open()
-    setup_controller(dualsense_controller)
+    # dualsense_controller = Dualsense()
+    # dualsense_controller.open()
+    # setup_controller(dualsense_controller)
 
-    if not dualsense_controller.is_open:
-        Tello.LOGGER.error("Dualsense controller not connected")
-        exit(1)
+    # if not dualsense_controller.is_open:
+    #     Tello.LOGGER.error("Dualsense controller not connected")
+    #     exit(1)
 
     try:
         run_app(tello)
