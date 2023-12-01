@@ -15,14 +15,12 @@ from smoke_jumper import close_dropper as drop
 from smoke_jumper import open_dropper as close_dropper
 from helper import show_frame
 from sys import exit
-from time import sleep
 from threading import Thread, Timer
 
 
 def move_tello_x_y(pos: tuple[int, int]) -> None:
     (x, y) = clamp_x_y(*pos)
     (x, y) = adjust_to_tello_rc(x, y)
-    # print(x, y)
     tello.send_rc_control(x, -y, 0, 0)
 
 
@@ -34,8 +32,6 @@ def move_tello_z(pos: tuple[int, int]) -> None:
 
 def drop_smokejumper() -> None:
     drop()
-    sleep(1)
-    close_dropper()
 
 
 def setup_controller(dualsense: Dualsense) -> None:
@@ -88,6 +84,7 @@ def run_app(tello: Tello) -> None:
             # run in a thread
             Thread(target=enter_recon_path, args=(tello,)).start()
         elif keyboard.is_pressed("q"):
+            close_dropper()
             break
         elif keyboard.is_pressed("Q"):
             tello.emergency()
@@ -107,17 +104,17 @@ if __name__ == "__main__":
     Tello.LOGGER.disabled = True
 
     # smoke juper set up
-    # port = scan_ports()[0]
-    # configure(port)
+    port = scan_ports()[0]
+    configure(port)
 
     # set up for the controller
-    # dualsense_controller = Dualsense()
-    # dualsense_controller.open()
-    # setup_controller(dualsense_controller)
+    dualsense_controller = Dualsense()
+    dualsense_controller.open()
+    setup_controller(dualsense_controller)
 
-    # if not dualsense_controller.is_open:
-    #     Tello.LOGGER.error("Dualsense controller not connected")
-    #     exit(1)
+    if not dualsense_controller.is_open:
+        Tello.LOGGER.error("Dualsense controller not connected")
+        exit(1)
 
     try:
         run_app(tello)
