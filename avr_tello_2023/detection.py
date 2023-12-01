@@ -99,20 +99,6 @@ def _range_check(left_right, forward_backward) -> tuple[int, int]:
     move_x = int(left_right * x)
     move_y = int(forward_backward * y)
 
-    # if -20 < move_x < 20:
-    #     if move_x < 0:
-    #         move_x = -20
-    #     else:
-    #         move_x = 20
-
-    # if -20 < move_y < 20:
-    #     if move_y < 0:
-    #         move_y = -20
-    #     else:
-    #         move_y = 20
-
-    print(f"x, y: {move_x}, {move_y}")
-
     return move_x, move_y
 
 
@@ -125,12 +111,10 @@ def calculate_alignment_A(img, tags, targets):
             left_right = image_center[0] - object_center[0]
             forward_backward = image_center[1] - object_center[1]
 
-            if (
-                -20 < left_right < 20 or -20 < forward_backward < 20
-            ):  # TODO: might change
+            if -20 < left_right < 20 or -20 < forward_backward < 20:
                 return None
 
-            return _range_check(forward_backward, left_right)
+            return None  # _range_check(forward_backward, left_right)
 
     return None
 
@@ -145,20 +129,16 @@ def calculate_alignment_H(img, detected_circles):
             left_right = image_center[0] - x
             forward_backward = image_center[1] - y
 
-            if (
-                -10 < left_right < 10 or -10 < forward_backward < 10
-            ):  # TODO: might change
+            if -10 < left_right < 10 or -10 < forward_backward < 10:
                 return None
 
             # flipped
-            return _range_check(forward_backward, left_right)
+            return None  # _range_check(forward_backward, left_right)
 
     return None
 
 
 def calculate_alignment_S(img, square):
-    # image_center = _draw_image_center(img)
-
     try:
         height, width, _ = img.shape
     except ValueError:
@@ -177,9 +157,9 @@ def calculate_alignment_S(img, square):
         x = image_center[0] - obj_center[0]
         y = image_center[1] - obj_center[1]
 
-        if -15 < x < 15 and -15 < y < 15:  # TODO: might change
-            return None
+        if -15 < x < 15 and -15 < y < 15:
+            return True
 
         return _range_check(x, y)
 
-    return None
+    return False

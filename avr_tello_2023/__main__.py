@@ -104,17 +104,17 @@ if __name__ == "__main__":
     Tello.LOGGER.disabled = True
 
     # smoke juper set up
-    port = scan_ports()[0]
-    configure(port)
+    # port = scan_ports()[0]
+    # configure(port)
 
     # set up for the controller
-    dualsense_controller = Dualsense()
-    dualsense_controller.open()
-    setup_controller(dualsense_controller)
+    # dualsense_controller = Dualsense()
+    # dualsense_controller.open()
+    # setup_controller(dualsense_controller)
 
-    if not dualsense_controller.is_open:
-        Tello.LOGGER.error("Dualsense controller not connected")
-        exit(1)
+    # if not dualsense_controller.is_open:
+    #     Tello.LOGGER.error("Dualsense controller not connected")
+    #     exit(1)
 
     try:
         run_app(tello)

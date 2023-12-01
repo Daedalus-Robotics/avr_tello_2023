@@ -19,6 +19,7 @@ CONTRAST = 2
 BRIGHTNESS = 19
 DIRECTION = True
 THRESH = 20
+BLOCK = 51
 
 
 def clamp_x_y(x: int, y: int) -> tuple[int, int]:
@@ -35,7 +36,7 @@ def adjust_to_tello_rc(x: int, y: int, adjust: float = 0.785) -> tuple[int, int]
 
 
 def align_tello(tello: Tello, frame_read, detection_type: str):
-    for _ in range(10):
+    for _ in range(3):
         img, show_img = get_frames(frame_read)
         if detection_type == "A":
             tags, targets = show_april_tag(img, show_img)
@@ -47,35 +48,35 @@ def align_tello(tello: Tello, frame_read, detection_type: str):
             square = show_square(img, show_img)
             amount_to_move = calculate_alignment_S(img, square)
 
-        if amount_to_move is None:
+        if amount_to_move is True:
             return
+        elif amount_to_move is False:
+            tello.move_up(20)
+            continue
 
         left_right, forward_backward = amount_to_move
-        print(f"x, y: {left_right}, {forward_backward}")
 
         # actually aligning the tello
         if left_right > 0:
             if left_right < 20:
-                tello.send_rc_control(50, 0, 0, 0)
-                sleep(0.2)
+                tello.send_rc_control(20, 0, 0, 0)
+                sleep(0.5)
                 tello.send_rc_control(0, 0, 0, 0)
                 continue
 
             tello.move_right(left_right)
         elif left_right < 0:
             if left_right > -20:
-                tello.send_rc_control(-50, 0, 0, 0)
-                sleep(0.2)
+                tello.send_rc_control(-20, 0, 0, 0)
+                sleep(0.5)
                 tello.send_rc_control(0, 0, 0, 0)
                 continue
 
             tello.move_left(-left_right)
 
-        sleep(3)
-
         if forward_backward > 0:
             if forward_backward < 20:
-                tello.send_rc_control(0, -50, 0, 0)
+                tello.send_rc_control(0, -20, 0, 0)
                 sleep(0.5)
                 tello.send_rc_control(0, 0, 0, 0)
                 continue
@@ -83,17 +84,35 @@ def align_tello(tello: Tello, frame_read, detection_type: str):
             tello.move_forward(forward_backward)
         elif forward_backward < 0:
             if left_right > -20:
-                tello.send_rc_control(0, 50, 0, 0)
+                tello.send_rc_control(0, 20, 0, 0)
                 sleep(0.5)
                 tello.send_rc_control(0, 0, 0, 0)
                 continue
 
             tello.move_back(-forward_backward)
 
+        break
+
 
 def show_square(img_for_detection, show_img):
-    final = cv2.medianBlur(img_for_detection, 5)
-    _, final = cv2.threshold(final, THRESH, 255, 1)
+    img_for_detection = cv2.addWeighted(img_for_detection, 2, img_for_detection, 0, 10)
+    thresh = cv2.adaptiveThreshold(
+        img_for_detection,
+        255,
+        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY_INV,
+        BLOCK,
+        9,
+    )
+
+    # Draw all contours
+    cnts = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+    for c in cnts:
+        cv2.drawContours(thresh, [c], -1, (255, 255, 255), -1)  # MUST BE WHITE
+
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
+    final = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=8)
 
     cv2.imshow("Modified", final)
 
@@ -101,11 +120,12 @@ def show_square(img_for_detection, show_img):
     cnts = cv2.findContours(final, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
 
+    # squares = cnts
     squares = []
     for c in cnts:
         x, y, w, h = cv2.boundingRect(c)
         area = cv2.contourArea(c)
-        if -50 < (x + w) - (y + h) < 50 and 4000 < area < 13000:
+        if -200 < (x + w) - (y + h) < 200 and 1000 < area < 12000:
             squares.append(c)
 
     areas = [cv2.contourArea(c) for c in squares]
@@ -117,9 +137,15 @@ def show_square(img_for_detection, show_img):
     if len(squares) > 0:
         c = squares[index]
         x, y, w, h = cv2.boundingRect(c)
-        cv2.rectangle(show_img, (x, y), (x + w, y + h), (36, 255, 12), 2)
+        cv2.rectangle(show_img, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
-    return cv2.boundingRect(squares[index])
+    # if len(squares) > 0:
+    #     c = max(squares, key=cv2.contourArea)
+    #     x, y, w, h = cv2.boundingRect(c)
+    #     cv2.rectangle(show_img, (x, y), (x + w, y + h), (0, 0, 255), 2)
+    #     return x, y, w, h
+
+    return None
 
 
 def show_april_tag(img_for_detection, show_img):
@@ -182,15 +208,13 @@ def enter_recon_path(tello: Tello) -> None:
     tello.move_up(50)
 
     # go straight to the school
-    tello.move_forward(HELIPAD_APRIL + APRIL_SCHOOL + 60)
+    tello.move_forward(HELIPAD_APRIL + APRIL_SCHOOL)
 
     align_tello(tello, tello.get_frame_read(), "S")
 
     smoke_jumper.close_dropper()
-    sleep(2)
-    smoke_jumper.open_dropper()
     # just hover over the building
-
-    # #tello.send_keepalive()
+    tello.send_keepalive()
+    smoke_jumper.open_dropper()
 
     Tello.LOGGER.info("Completed Autonomous Recon Path")

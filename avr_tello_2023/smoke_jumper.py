@@ -6,11 +6,10 @@ ser = serial.Serial()
 def configure(com, baud=115200):
     ser.baudrate = baud
     ser.port = com
+    ser.open()
 
 
 def close_dropper() -> bool:
-    ser.open()
-
     if ser.is_open:
         ser.write(b"2")
         ser.close()
@@ -20,8 +19,6 @@ def close_dropper() -> bool:
 
 
 def open_dropper() -> bool:
-    ser.open()
-
     if ser.is_open:
         ser.write(b"1")
         ser.close()
